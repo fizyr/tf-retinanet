@@ -35,3 +35,13 @@ class Backbone(object):
 		Having this function in Backbone allows other backbones to define a specific preprocessing step.
 		"""
 		raise NotImplementedError('preprocess_image method not implemented.')
+
+def get_backbone(config):
+	try:
+		backbone_name = config['backbone']['name']
+		backbone_pkg = __import__('backbones', fromlist=[backbone_name])
+		backbone_pkg = getattr(backbone_pkg, backbone_name)
+	except:
+		raise(config['backbone']['name'] + 'is not a valid backbone')
+
+	return backbone_pkg.from_config(config['backbone']['details'])
