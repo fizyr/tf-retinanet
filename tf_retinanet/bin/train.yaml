@@ -6,3 +6,5 @@ backbone:
 generator:
   name: coco
   details:
+    data_dir: /srv/dataset/COCO/
+    set_name: train2017

@@ -9,7 +9,10 @@ from ..utils.anchors import (
 	anchors_for_shape,
 	guess_shapes
 )
-from ..utils.config import parse_anchor_parameters
+
+# TODO parse it using the yaml
+from ..utils.config import parse_anchor_parameters 
+
 from ..utils.image import (
 	TransformParameters,
 	adjust_transform_for_image,
@@ -318,4 +321,14 @@ class Generator(tf.keras.utils.Sequence):
 		inputs, targets = self.compute_input_output(group)
 
 		return inputs, targets
+
+def get_generator(config):
+	try:
+		generator_name = config['generator']['name']
+		generator_pkg = __import__('generators', fromlist=[generator_name])
+		generator_pkg = getattr(generator_pkg, generator_name)
+	except:
+		raise(config['generator']['name'] + 'is not a valid generator')
+
+	return generator_pkg.from_config(config['generator']['details'])
 

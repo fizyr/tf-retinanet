@@ -10,6 +10,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from .. import models
 from ..backbone import get_backbone
+from ..generator import get_generator
 
 def parse_yaml():
 	with open("train.yaml", 'r') as stream:
@@ -24,9 +25,11 @@ def main():
 	config = parse_yaml()
 
 	backbone = get_backbone(config)
+	generator = get_generator(config)
 
 	retinanet = backbone.retinanet(1)
 	retinanet = models.retinanet.retinanet_bbox(retinanet)
+
 
 
 if __name__ == '__main__':
