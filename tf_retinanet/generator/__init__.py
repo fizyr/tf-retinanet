@@ -322,7 +322,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return inputs, targets
 
-def get_generator(config):
+def get_generators(config, **kwargs):
 	try:
 		generator_name = config['generator']['name']
 		generator_pkg = __import__('generators', fromlist=[generator_name])
@@ -330,5 +330,5 @@ def get_generator(config):
 	except:
 		raise(config['generator']['name'] + 'is not a valid generator')
 
-	return generator_pkg.from_config(config['generator']['details'])
+	return generator_pkg.from_config(config['generator']['details'], **kwargs)
 

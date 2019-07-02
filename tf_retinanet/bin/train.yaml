@@ -7,4 +7,5 @@ generator:
   name: coco
   details:
     data_dir: /srv/dataset/COCO/
-    set_name: train2017
+    train_set_name: train2017
+    validation_set_name: val2017
