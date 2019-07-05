@@ -9,3 +9,14 @@ generator:
     data_dir: /srv/dataset/COCO/
     train_set_name: train2017
     validation_set_name: val2017
+
+callbacks:
+  snapshots_path:
+  project_name:
+
+train:
+  steps_per_epoch: 100
+  epochs: 50
+  workers: 1
+  max_queue_size: 10
+  gpu: 0

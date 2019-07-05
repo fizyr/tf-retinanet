@@ -1,27 +1,5 @@
 import tensorflow as tf
 
-#TODO expose this in tf.keras
-class LossFunctionWrapper(tf.keras.losses.Loss):
-	def __init__(
-		self,
-		fn,
-		name=None,
-		**kwargs
-	):
-		super(LossFunctionWrapper, self).__init__(name=name)
-		self.fn = fn
-		self._fn_kwargs = kwargs
-
-	def call(self, y_true, y_pred):
-		return self.fn(y_true, y_pred, **self._fn_kwargs)
-
-	def get_config(self):
-		config = {}
-		for k, v in six.iteritems(self._fn_kwargs):
-			config[k] = K.eval(v) if tf_utils.is_tensor_or_variable(v) else v
-		base_config = super(LossFunctionWrapper, self).get_config()
-		return dict(list(base_config.items()) + list(config.items()))
-
 def focal(alpha=0.25, gamma=2.0):
 	""" Create a functor for computing the focal loss.
 
@@ -66,20 +44,6 @@ def focal(alpha=0.25, gamma=2.0):
 		return tf.keras.backend.sum(cls_loss) / normalizer
 
 	return _focal
-
-class FocalLoss(LossFunctionWrapper):
-	def __init__(
-		self,
-		from_logits=False,
-		label_smoothing=0,
-		name='focal_loss'
-	):
-		super(FocalLoss, self).__init__(
-			focal(),
-			name=name,
-			from_logits=from_logits,
-			label_smoothing=label_smoothing
-		)
 
 def smooth_l1(sigma=3.0):
 	""" Create a smooth L1 loss functor.
@@ -129,17 +93,3 @@ def smooth_l1(sigma=3.0):
 		return tf.keras.backend.sum(regression_loss) / normalizer
 
 	return _smooth_l1
-
-class SmoothL1(LossFunctionWrapper):
-	def __init__(
-		self,
-		from_logits=False,
-		label_smoothing=0,
-		name='smoth_l1'
-	):
-		super(SmoothL1, self).__init__(
-			smooth_l1(),
-			name=name,
-			from_logits=from_logits,
-			label_smoothing=label_smoothing
-		)
