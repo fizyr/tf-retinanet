@@ -39,7 +39,7 @@ class Backbone(object):
 def get_backbone(config):
 	try:
 		backbone_name = config['backbone']['name']
-		backbone_pkg = __import__('backbones', fromlist=[backbone_name])
+		backbone_pkg = __import__('tf_retinanet_backbones', fromlist=[backbone_name])
 		backbone_pkg = getattr(backbone_pkg, backbone_name)
 	except:
 		raise(config['backbone']['name'] + 'is not a valid backbone')

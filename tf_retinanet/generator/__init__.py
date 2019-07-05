@@ -325,7 +325,7 @@ class Generator(tf.keras.utils.Sequence):
 def get_generators(config, **kwargs):
 	try:
 		generator_name = config['generator']['name']
-		generator_pkg = __import__('generators', fromlist=[generator_name])
+		generator_pkg = __import__('tf_retinanet_generators', fromlist=[generator_name])
 		generator_pkg = getattr(generator_pkg, generator_name)
 	except:
 		raise(config['generator']['name'] + 'is not a valid generator')
