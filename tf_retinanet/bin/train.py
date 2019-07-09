@@ -16,6 +16,7 @@ from ..backbone import get_backbone
 from ..callbacks import RedirectModel
 from ..generators import get_generators
 
+
 def makedirs(path): #TODO still needed?
 	# Intended behavior: try to create the directory,
 	# pass if the directory exists already, fails otherwise.
@@ -25,6 +26,7 @@ def makedirs(path): #TODO still needed?
 	except OSError:
 		if not os.path.isdir(path):
 			raise
+
 
 def set_defaults(config):
 	if not config['callbacks']['snapshots_path']:
@@ -95,10 +97,12 @@ def create_callbacks(
 
 	return callbacks
 
-
 def main():
 	# Parse the configuration file.
 	config = parse_yaml()
+
+	# Disable eager, prevents memory leak and makes training faster.
+	tf.compat.v1.disable_eager_execution()
 
 	# Set gpu configuration.
 	setup_gpu(config['train']['gpu'])
