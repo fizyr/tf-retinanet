@@ -12,7 +12,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from .. import losses
 from .. import models
-from ..backbone import get_backbone
+from ..backbones import get_backbone
 from ..callbacks import RedirectModel
 from ..generators import get_generators
 
