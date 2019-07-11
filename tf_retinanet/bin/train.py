@@ -4,6 +4,7 @@ import os
 
 import tensorflow as tf
 
+
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
 	sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -17,7 +18,7 @@ from ..callbacks import RedirectModel
 from ..generators import get_generators
 
 
-def makedirs(path): #TODO still needed?
+def makedirs(path):  # TODO still needed?
 	# Intended behavior: try to create the directory,
 	# pass if the directory exists already, fails otherwise.
 	# Meant for Python 2.7/3.n compatibility.
@@ -40,7 +41,7 @@ def set_defaults(config):
 
 
 def parse_yaml():
-	#TODO get the filename using a parser
+	# TODO get the filename using a parser
 	with open(sys.argv[1], 'r') as stream:
 		try:
 			config = yaml.safe_load(stream)
@@ -97,6 +98,7 @@ def create_callbacks(
 
 	return callbacks
 
+
 def main():
 	# Parse the configuration file.
 	config = parse_yaml()
@@ -116,7 +118,7 @@ def main():
 		preprocess_image=backbone.preprocess_image
 	)
 
-	if not 'train' in generators:
+	if 'train' not in generators:
 		raise 'Could not get train generator.'
 	train_generator = generators['train']
 	validation_generator = None
@@ -167,6 +169,7 @@ def main():
 		use_multiprocessing=train_config['use_multiprocessing'],
 		max_queue_size=train_config['max_queue_size'],
 	)
+
 
 if __name__ == '__main__':
 	main()

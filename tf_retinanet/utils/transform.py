@@ -14,10 +14,10 @@ def transform_aabb(transform, aabb):
 	The new AABB contains all corner points of the original AABB after applying the given transformation.
 	Args
 		transform: The transformation to apply.
-		x1:		   The minimum x value of the AABB.
-		y1:		   The minimum y value of the AABB.
-		x2:		   The maximum x value of the AABB.
-		y2:		   The maximum y value of the AABB.
+		x1:        The minimum x value of the AABB.
+		y1:        The minimum y value of the AABB.
+		x2:        The maximum x value of the AABB.
+		y2:        The maximum y value of the AABB.
 	Returns
 		The new AABB as tuple (x1, y1, x2, y2)
 	"""
@@ -196,28 +196,28 @@ def random_transform(
 ):
 	""" Create a random transformation.
 	The transformation consists of the following operations in this order (from left to right):
-	  * rotation
-	  * translation
-	  * shear
-	  * scaling
-	  * flip x (if applied)
-	  * flip y (if applied)
+		* rotation
+		* translation
+		* shear
+		* scaling
+		* flip x (if applied)
+		* flip y (if applied)
 	Note that by default, the data generators in `keras_retinanet.preprocessing.generators` interpret the translation
 	as factor of the image size. So an X translation of 0.1 would translate the image by 10% of it's width.
 	Set `relative_translation` to `False` in the `TransformParameters` of a data generator to have it interpret
 	the translation directly as pixel distances instead.
 	Args
-		min_rotation:	 The minimum rotation in radians for the transform as scalar.
-		max_rotation:	 The maximum rotation in radians for the transform as scalar.
+		min_rotation:    The minimum rotation in radians for the transform as scalar.
+		max_rotation:    The maximum rotation in radians for the transform as scalar.
 		min_translation: The minimum translation for the transform as 2D column vector.
 		max_translation: The maximum translation for the transform as 2D column vector.
-		min_shear:		 The minimum shear angle for the transform in radians.
-		max_shear:		 The maximum shear angle for the transform in radians.
-		min_scaling:	 The minimum scaling for the transform as 2D column vector.
-		max_scaling:	 The maximum scaling for the transform as 2D column vector.
-		flip_x_chance:	 The chance (0 to 1) that a transform will contain a flip along X direction.
-		flip_y_chance:	 The chance (0 to 1) that a transform will contain a flip along Y direction.
-		prng:			 The pseudo-random number generator to use.
+		min_shear:       The minimum shear angle for the transform in radians.
+		max_shear:       The maximum shear angle for the transform in radians.
+		min_scaling:     The minimum scaling for the transform as 2D column vector.
+		max_scaling:     The maximum scaling for the transform as 2D column vector.
+		flip_x_chance:   The chance (0 to 1) that a transform will contain a flip along X direction.
+		flip_y_chance:   The chance (0 to 1) that a transform will contain a flip along Y direction.
+		prng:            The pseudo-random number generator to use.
 	"""
 	return np.linalg.multi_dot([
 		random_rotation(min_rotation, max_rotation, prng),
@@ -232,28 +232,28 @@ def random_transform_generator(prng=None, **kwargs):
 	""" Create a random transform generator.
 	Uses a dedicated, newly created, properly seeded PRNG by default instead of the global DEFAULT_PRNG.
 	The transformation consists of the following operations in this order (from left to right):
-	  * rotation
-	  * translation
-	  * shear
-	  * scaling
-	  * flip x (if applied)
-	  * flip y (if applied)
+		* rotation
+		* translation
+		* shear
+		* scaling
+		* flip x (if applied)
+		* flip y (if applied)
 	Note that by default, the data generators in `keras_retinanet.preprocessing.generators` interpret the translation
 	as factor of the image size. So an X translation of 0.1 would translate the image by 10% of it's width.
 	Set `relative_translation` to `False` in the `TransformParameters` of a data generator to have it interpret
 	the translation directly as pixel distances instead.
 	Args
-		min_rotation:	 The minimum rotation in radians for the transform as scalar.
-		max_rotation:	 The maximum rotation in radians for the transform as scalar.
+		min_rotation:    The minimum rotation in radians for the transform as scalar.
+		max_rotation:    The maximum rotation in radians for the transform as scalar.
 		min_translation: The minimum translation for the transform as 2D column vector.
 		max_translation: The maximum translation for the transform as 2D column vector.
-		min_shear:		 The minimum shear angle for the transform in radians.
-		max_shear:		 The maximum shear angle for the transform in radians.
-		min_scaling:	 The minimum scaling for the transform as 2D column vector.
-		max_scaling:	 The maximum scaling for the transform as 2D column vector.
-		flip_x_chance:	 The chance (0 to 1) that a transform will contain a flip along X direction.
-		flip_y_chance:	 The chance (0 to 1) that a transform will contain a flip along Y direction.
-		prng:			 The pseudo-random number generator to use.
+		min_shear:       The minimum shear angle for the transform in radians.
+		max_shear:       The maximum shear angle for the transform in radians.
+		min_scaling:     The minimum scaling for the transform as 2D column vector.
+		max_scaling:     The maximum scaling for the transform as 2D column vector.
+		flip_x_chance:   The chance (0 to 1) that a transform will contain a flip along X direction.
+		flip_y_chance:   The chance (0 to 1) that a transform will contain a flip along Y direction.
+		prng:            The pseudo-random number generator to use.
 	"""
 
 	if prng is None:

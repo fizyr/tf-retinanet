@@ -36,12 +36,13 @@ class Backbone(object):
 		"""
 		raise NotImplementedError('preprocess_image method not implemented.')
 
+
 def get_backbone(config):
 	try:
 		backbone_name = config['backbone']['name']
 		backbone_pkg = __import__('tf_retinanet_backbones', fromlist=[backbone_name])
 		backbone_pkg = getattr(backbone_pkg, backbone_name)
-	except:
+	except ImportError:
 		raise(config['backbone']['name'] + 'is not a valid backbone')
 
 	return backbone_pkg.from_config(config['backbone']['details'])

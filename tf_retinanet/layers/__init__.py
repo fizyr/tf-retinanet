@@ -1,2 +1,2 @@
-from .misc import Anchors, UpsampleLike, RegressBoxes, ClipBoxes
-from .filter_detections import FilterDetections
+from .misc import Anchors, UpsampleLike, RegressBoxes, ClipBoxes  # noqa: F401
+from .filter_detections import FilterDetections  # noqa: F401

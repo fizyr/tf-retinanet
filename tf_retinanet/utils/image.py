@@ -5,6 +5,7 @@ from PIL import Image
 
 from .transform import change_transform_origin
 
+
 def read_image_bgr(path):
 	""" Read an image in BGR format.
 
@@ -28,10 +29,10 @@ def preprocess_image(x, mode='caffe'):
 	Returns
 		The input with the ImageNet mean subtracted.
 	"""
-	# mostly identical to "https://github.com/keras-team/keras-applications/blob/master/keras_applications/imagenet_utils.py"
-	# except for converting RGB -> BGR since we assume BGR already
+	# Mostly identical to "https://github.com/keras-team/keras-applications/blob/master/keras_applications/imagenet_utils.py"
+	# except for converting RGB -> BGR since we assume BGR already.
 
-	# covert always to float32 to keep compatibility with opencv
+	# Covert always to float32 to keep compatibility with opencv.
 	x = x.astype(np.float32)
 
 	if mode == 'tf':
@@ -69,22 +70,22 @@ class TransformParameters:
 	""" Struct holding parameters determining how to apply a transformation to an image.
 
 	Args
-		fill_mode:			   One of: 'constant', 'nearest', 'reflect', 'wrap'
-		interpolation:		   One of: 'nearest', 'linear', 'cubic', 'area', 'lanczos4'
-		cval:				   Fill value to use with fill_mode='constant'
-		relative_translation:  If true (the default), interpret translation as a factor of the image size.
-							   If false, interpret it as absolute pixels.
+		fill_mode            : One of: 'constant', 'nearest', 'reflect', 'wrap'
+		interpolation        : One of: 'nearest', 'linear', 'cubic', 'area', 'lanczos4'
+		cval                 : Fill value to use with fill_mode='constant'
+		relative_translation : If true (the default), interpret translation as a factor of the image size.
+								If false, interpret it as absolute pixels.
 	"""
 	def __init__(
 		self,
-		fill_mode			 = 'nearest',
-		interpolation		 = 'linear',
-		cval				 = 0,
+		fill_mode            = 'nearest',
+		interpolation        = 'linear',
+		cval                 = 0,
 		relative_translation = True,
 	):
-		self.fill_mode			  = fill_mode
-		self.cval				  = cval
-		self.interpolation		  = interpolation
+		self.fill_mode            = fill_mode
+		self.cval                 = cval
+		self.interpolation        = interpolation
 		self.relative_translation = relative_translation
 
 	def cvBorderMode(self):
@@ -120,16 +121,16 @@ def apply_transform(matrix, image, params):
 	Mathematically speaking, that means that the matrix is a transformation from the transformed image space to the original image space.
 
 	Args
-	  matrix: A homogeneous 3 by 3 matrix holding representing the transformation to apply.
-	  image:  The image to transform.
-	  params: The transform parameters (see TransformParameters)
+		matrix : A homogeneous 3 by 3 matrix holding representing the transformation to apply.
+		image  : The image to transform.
+		params : The transform parameters (see TransformParameters)
 	"""
 	output = cv2.warpAffine(
 		image,
 		matrix[:2, :],
-		dsize		= (image.shape[1], image.shape[0]),
-		flags		= params.cvInterpolation(),
-		borderMode	= params.cvBorderMode(),
+		dsize       = (image.shape[1], image.shape[0]),
+		flags       = params.cvInterpolation(),
+		borderMode  = params.cvBorderMode(),
 		borderValue = params.cval,
 	)
 	return output
@@ -149,11 +150,11 @@ def compute_resize_scale(image_shape, min_side=800, max_side=1333):
 
 	smallest_side = min(rows, cols)
 
-	# rescale the image so the smallest side is min_side
+	# Rescale the image so the smallest side is min_side.
 	scale = min_side / smallest_side
 
-	# check if the largest side is now greater than max_side, which can happen
-	# when images have a large aspect ratio
+	# Check if the largest side is now greater than max_side, which can happen
+	# when images have a large aspect ratio.
 	largest_side = max(rows, cols)
 	if largest_side * scale > max_side:
 		scale = max_side / largest_side
@@ -171,10 +172,10 @@ def resize_image(img, min_side=800, max_side=1333):
 	Returns
 		A resized image.
 	"""
-	# compute scale to resize the image
+	# Compute scale to resize the image.
 	scale = compute_resize_scale(img.shape, min_side=min_side, max_side=max_side)
 
-	# resize the image with the computed scale
+	# Resize the image with the computed scale.
 	img = cv2.resize(img, None, fx=scale, fy=scale)
 
 	return img, scale

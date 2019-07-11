@@ -1,2 +1,1 @@
-from . import retinanet
-
+from . import retinanet  # noqa: F401

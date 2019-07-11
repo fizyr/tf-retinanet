@@ -24,13 +24,13 @@ class AnchorParameters:
 	""" The parameteres that define how anchors are generated.
 
 	Args
-		sizes	: List of sizes to use. Each size corresponds to one feature level.
+		sizes   : List of sizes to use. Each size corresponds to one feature level.
 		strides : List of strides to use. Each stride correspond to one feature level.
-		ratios	: List of ratios to use per location in a feature map.
-		scales	: List of scales to use per location in a feature map.
+		ratios  : List of ratios to use per location in a feature map.
+		scales  : List of scales to use per location in a feature map.
 	"""
 	def __init__(self, sizes, strides, ratios, scales):
-		self.sizes	 = sizes
+		self.sizes   = sizes
 		self.strides = strides
 		self.ratios  = ratios
 		self.scales  = scales
@@ -43,10 +43,10 @@ class AnchorParameters:
 The default anchor parameters.
 """
 AnchorParameters.default = AnchorParameters(
-	sizes	= [32, 64, 128, 256, 512],
+	sizes   = [32, 64, 128, 256, 512],
 	strides = [8, 16, 32, 64, 128],
-	ratios	= np.array([0.5, 1, 2], tf.keras.backend.floatx()),
-	scales	= np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], tf.keras.backend.floatx()),
+	ratios  = np.array([0.5, 1, 2], tf.keras.backend.floatx()),
+	scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], tf.keras.backend.floatx()),
 )
 
 
@@ -71,10 +71,10 @@ def anchor_targets_bbox(
 
 	Returns
 		labels_batch: batch that contains labels & anchor states (np.array of shape (batch_size, N, num_classes + 1),
-					  where N is the number of anchors for an image and the last column defines the anchor state (-1 for ignore, 0 for bg, 1 for fg).
+					where N is the number of anchors for an image and the last column defines the anchor state (-1 for ignore, 0 for bg, 1 for fg).
 		regression_batch: batch that contains bounding-box regression targets for an image & anchor states (np.array of shape (batch_size, N, 4 + 1),
-					  where N is the number of anchors for an image, the first 4 columns define regression targets for (x1, y1, x2, y2) and the
-					  last column defines anchor states (-1 for ignore, 0 for bg, 1 for fg).
+					where N is the number of anchors for an image, the first 4 columns define regression targets for (x1, y1, x2, y2) and the
+					last column defines anchor states (-1 for ignore, 0 for bg, 1 for fg).
 	"""
 
 	assert(len(image_group) == len(annotations_group)), "The length of the images and annotations need to be equal."
@@ -86,31 +86,31 @@ def anchor_targets_bbox(
 	batch_size = len(image_group)
 
 	regression_batch  = np.zeros((batch_size, anchors.shape[0], 4 + 1), dtype=tf.keras.backend.floatx())
-	labels_batch	  = np.zeros((batch_size, anchors.shape[0], num_classes + 1), dtype=tf.keras.backend.floatx())
+	labels_batch      = np.zeros((batch_size, anchors.shape[0], num_classes + 1), dtype=tf.keras.backend.floatx())
 
-	# compute labels and regression targets
+	# Compute labels and regression targets.
 	for index, (image, annotations) in enumerate(zip(image_group, annotations_group)):
 		if annotations['bboxes'].shape[0]:
-			# obtain indices of gt annotations with the greatest overlap
+			# Obtain indices of gt annotations with the greatest overlap.
 			positive_indices, ignore_indices, argmax_overlaps_inds = compute_gt_annotations(anchors, annotations['bboxes'], negative_overlap, positive_overlap)
 
-			labels_batch[index, ignore_indices, -1]		  = -1
-			labels_batch[index, positive_indices, -1]	  = 1
+			labels_batch[index, ignore_indices, -1]       = -1
+			labels_batch[index, positive_indices, -1]     = 1
 
 			regression_batch[index, ignore_indices, -1]   = -1
 			regression_batch[index, positive_indices, -1] = 1
 
-			# compute target class labels
+			# Compute target class labels.
 			labels_batch[index, positive_indices, annotations['labels'][argmax_overlaps_inds[positive_indices]].astype(int)] = 1
 
 			regression_batch[index, :, :-1] = bbox_transform(anchors, annotations['bboxes'][argmax_overlaps_inds, :])
 
-		# ignore annotations outside of image
+		# Ignore annotations outside of image.
 		if image.shape:
 			anchors_centers = np.vstack([(anchors[:, 0] + anchors[:, 2]) / 2, (anchors[:, 1] + anchors[:, 3]) / 2]).T
 			indices = np.logical_or(anchors_centers[:, 0] >= image.shape[1], anchors_centers[:, 1] >= image.shape[0])
 
-			labels_batch[index, indices, -1]	 = -1
+			labels_batch[index, indices, -1]     = -1
 			regression_batch[index, indices, -1] = -1
 
 	return regression_batch, labels_batch
@@ -140,7 +140,7 @@ def compute_gt_annotations(
 	argmax_overlaps_inds = np.argmax(overlaps, axis=1)
 	max_overlaps = overlaps[np.arange(overlaps.shape[0]), argmax_overlaps_inds]
 
-	# assign "dont care" labels
+	# Assign "dont care" labels.
 	positive_indices = max_overlaps >= positive_overlap
 	ignore_indices = (max_overlaps > negative_overlap) & ~positive_indices
 
@@ -187,8 +187,8 @@ def guess_shapes(image_shape, pyramid_levels):
 	"""Guess shapes based on pyramid levels.
 
 	Args
-		 image_shape: The shape of the image.
-		 pyramid_levels: A list of what pyramid levels are used.
+		image_shape: The shape of the image.
+		pyramid_levels: A list of what pyramid levels are used.
 
 	Returns
 		A list of image shapes at each pyramid level.
@@ -226,7 +226,7 @@ def anchors_for_shape(
 		shapes_callback = guess_shapes
 	image_shapes = shapes_callback(image_shape, pyramid_levels)
 
-	# compute anchors over all pyramid levels
+	# Compute anchors over all pyramid levels.
 	all_anchors = np.zeros((0, 4))
 	for idx, p in enumerate(pyramid_levels):
 		anchors = generate_anchors(
@@ -235,7 +235,7 @@ def anchors_for_shape(
 			scales=anchor_params.scales
 		)
 		shifted_anchors = shift(image_shapes[idx], anchor_params.strides[idx], anchors)
-		all_anchors		= np.append(all_anchors, shifted_anchors, axis=0)
+		all_anchors     = np.append(all_anchors, shifted_anchors, axis=0)
 
 	return all_anchors
 
@@ -249,7 +249,7 @@ def shift(shape, stride, anchors):
 		anchors: The anchors to apply at each location.
 	"""
 
-	# create a grid starting from half stride from the top left corner
+	# Create a grid starting from half stride from the top left corner.
 	shift_x = (np.arange(0, shape[1]) + 0.5) * stride
 	shift_y = (np.arange(0, shape[0]) + 0.5) * stride
 
@@ -260,10 +260,10 @@ def shift(shape, stride, anchors):
 		shift_x.ravel(), shift_y.ravel()
 	)).transpose()
 
-	# add A anchors (1, A, 4) to
+	# Add A anchors (1, A, 4) to
 	# cell K shifts (K, 1, 4) to get
 	# shift anchors (K, A, 4)
-	# reshape to (K*A, 4) shifted anchors
+	# reshape to (K*A, 4) shifted anchors.
 	A = anchors.shape[0]
 	K = shifts.shape[0]
 	all_anchors = (anchors.reshape((1, A, 4)) + shifts.reshape((1, K, 4)).transpose((1, 0, 2)))
@@ -286,20 +286,20 @@ def generate_anchors(base_size=16, ratios=None, scales=None):
 
 	num_anchors = len(ratios) * len(scales)
 
-	# initialize output anchors
+	# Initialize output anchors.
 	anchors = np.zeros((num_anchors, 4))
 
-	# scale base_size
+	# Scale base_size.
 	anchors[:, 2:] = base_size * np.tile(scales, (2, len(ratios))).T
 
-	# compute areas of anchors
+	# Compute areas of anchors.
 	areas = anchors[:, 2] * anchors[:, 3]
 
-	# correct for ratios
+	# Correct for ratios.
 	anchors[:, 2] = np.sqrt(areas / np.repeat(ratios, len(scales)))
 	anchors[:, 3] = anchors[:, 2] * np.repeat(ratios, len(scales))
 
-	# transform from (x_ctr, y_ctr, w, h) -> (x1, y1, x2, y2)
+	# Transform from (x_ctr, y_ctr, w, h) -> (x1, y1, x2, y2).
 	anchors[:, 0::2] -= np.tile(anchors[:, 2] * 0.5, (2, 1)).T
 	anchors[:, 1::2] -= np.tile(anchors[:, 3] * 0.5, (2, 1)).T
 

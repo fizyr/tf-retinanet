@@ -11,7 +11,7 @@ class RedirectModel(tf.keras.callbacks.Callback):
 	```
 	Args
 		callback : callback to wrap.
-		model	 : model to use when executing callbacks.
+		model    : model to use when executing callbacks.
 	"""
 
 	def __init__(
@@ -37,7 +37,7 @@ class RedirectModel(tf.keras.callbacks.Callback):
 		self.callback.on_batch_end(batch, logs=logs)
 
 	def on_train_begin(self, logs=None):
-		# overwrite the model with our custom model
+		# Overwrite the model with our custom model.
 		self.callback.set_model(self.redirect_model)
 
 		self.callback.on_train_begin(logs=logs)

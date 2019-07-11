@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 def focal(alpha=0.25, gamma=2.0):
 	""" Create a functor for computing the focal loss.
 
@@ -45,6 +46,7 @@ def focal(alpha=0.25, gamma=2.0):
 
 	return _focal
 
+
 def smooth_l1(sigma=3.0):
 	""" Create a smooth L1 loss functor.
 
@@ -66,19 +68,19 @@ def smooth_l1(sigma=3.0):
 		Returns
 			The smooth L1 loss of y_pred w.r.t. y_true.
 		"""
-		# separate target and state
-		regression		  = y_pred
+		# Separate target and state.
+		regression        = y_pred
 		regression_target = y_true[:, :, :4]
-		anchor_state	  = y_true[:, :, 4]
+		anchor_state      = y_true[:, :, 4]
 
-		# filter out "ignore" anchors
-		indices			  = tf.where(tf.keras.backend.equal(anchor_state, 1))
-		regression		  = tf.gather_nd(regression, indices)
+		# Filter out "ignore" anchors.
+		indices           = tf.where(tf.keras.backend.equal(anchor_state, 1))
+		regression        = tf.gather_nd(regression, indices)
 		regression_target = tf.gather_nd(regression_target, indices)
 
-		# compute smooth L1 loss
-		# f(x) = 0.5 * (sigma * x)^2		  if |x| < 1 / sigma / sigma
-		#		 |x| - 0.5 / sigma / sigma	  otherwise
+		# Compute smooth L1 loss
+		# f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
+		#        |x| - 0.5 / sigma / sigma    otherwise
 		regression_diff = regression - regression_target
 		regression_diff = tf.keras.backend.abs(regression_diff)
 		regression_loss = tf.where(

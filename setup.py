@@ -2,6 +2,7 @@ import setuptools
 from setuptools.extension import Extension
 from distutils.command.build_ext import build_ext as DistUtilsBuildExt
 
+
 class BuildExtension(setuptools.Command):
     description     = DistUtilsBuildExt.description
     user_options    = DistUtilsBuildExt.user_options
