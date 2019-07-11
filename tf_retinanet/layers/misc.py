@@ -3,6 +3,7 @@ import numpy as np
 
 from ..utils import anchors as utils_anchors
 
+
 class Anchors(tf.keras.layers.Layer):
 	""" Keras layer for generating achors for a given shape.
 	"""
@@ -38,13 +39,11 @@ class Anchors(tf.keras.layers.Layer):
 
 		super(Anchors, self).__init__(*args, **kwargs)
 
-
-
 	def call(self, inputs, **kwargs):
 		features = inputs
 		features_shape = tf.keras.backend.shape(features)
 
-		# generate proposals from bbox deltas and shifted anchors
+		# Generate proposals from bbox deltas and shifted anchors.
 		def _shift(shape, stride, anchors):
 			""" Produce shifted anchors based on shape of the map and stride size.
 			Args
@@ -69,7 +68,7 @@ class Anchors(tf.keras.layers.Layer):
 			shifts            = tf.keras.backend.transpose(shifts)
 			number_of_anchors = tf.keras.backend.shape(anchors)[0]
 
-			k = tf.keras.backend.shape(shifts)[0]  # number of base points = feat_h * feat_w
+			k = tf.keras.backend.shape(shifts)[0]  # Number of base points = feat_h * feat_w.
 
 			shifted_anchors = tf.keras.backend.reshape(anchors, [1, number_of_anchors, 4]) + tf.keras.backend.cast(tf.keras.backend.reshape(shifts, [k, 1, 4]), tf.keras.backend.floatx())
 			shifted_anchors = tf.keras.backend.reshape(shifted_anchors, [k * number_of_anchors, 4])
@@ -228,4 +227,3 @@ class ClipBoxes(tf.keras.layers.Layer):
 
 	def compute_output_shape(self, input_shape):
 		return input_shape[1]
-

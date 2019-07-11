@@ -5,11 +5,13 @@ from .. import initializers
 from .. import layers
 from . import fpn
 
+
 def assert_training_model(model):
 	""" Assert that the model is a training model.
 	"""
 	assert(all(output in model.output_names for output in ['regression', 'classification'])), \
 		"Input is not a training model (no 'regression' and 'classification' outputs were found, outputs are: {}).".format(model.output_names)
+
 
 def default_classification_model(
 	num_classes,
@@ -21,18 +23,18 @@ def default_classification_model(
 ):
 	""" Creates the default regression submodel.
 	Args
-		num_classes					: Number of classes to predict a score for at each feature level.
-		num_anchors					: Number of anchors to predict classification scores for at each feature level.
-		pyramid_feature_size		: The number of filters to expect from the feature pyramid levels.
+		num_classes                 : Number of classes to predict a score for at each feature level.
+		num_anchors                 : Number of anchors to predict classification scores for at each feature level.
+		pyramid_feature_size        : The number of filters to expect from the feature pyramid levels.
 		classification_feature_size : The number of filters to use in the layers in the classification submodel.
-		name						: The name of the submodel.
+		name                        : The name of the submodel.
 	Returns
 		A tensorflow.keras.models.Model that predicts classes for each anchor.
 	"""
 	options = {
 		'kernel_size' : 3,
-		'strides'	  : 1,
-		'padding'	  : 'same',
+		'strides'     : 1,
+		'padding'     : 'same',
 	}
 
 	if tf.keras.backend.image_data_format() == 'channels_first':
@@ -58,7 +60,7 @@ def default_classification_model(
 		**options
 	)(outputs)
 
-	# reshape output and apply sigmoid
+	# Reshape output and apply sigmoid.
 	if tf.keras.backend.image_data_format() == 'channels_first':
 		outputs = tf.keras.layers.Permute((2, 3, 1), name='pyramid_classification_permute')(outputs)
 	outputs = tf.keras.layers.Reshape((-1, num_classes), name='pyramid_classification_reshape')(outputs)
@@ -66,14 +68,15 @@ def default_classification_model(
 
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
+
 def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name='regression_submodel'):
 	""" Creates the default regression submodel.
 	Args
-		num_values				: Number of values to regress.
-		num_anchors				: Number of anchors to regress for each feature level.
-		pyramid_feature_size	: The number of filters to expect from the feature pyramid levels.
+		num_values              : Number of values to regress.
+		num_anchors             : Number of anchors to regress for each feature level.
+		pyramid_feature_size    : The number of filters to expect from the feature pyramid levels.
 		regression_feature_size : The number of filters to use in the layers in the regression submodel.
-		name					: The name of the submodel.
+		name                    : The name of the submodel.
 	Returns
 		A tf.keras.models.Model that predicts regression values for each anchor.
 	"""
@@ -81,17 +84,17 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 	# RetinaNet (classification) subnets are initialized
 	# with bias b = 0 and a Gaussian weight fill with stddev = 0.01.
 	options = {
-		'kernel_size'		 : 3,
-		'strides'			 : 1,
-		'padding'			 : 'same',
+		'kernel_size'        : 3,
+		'strides'            : 1,
+		'padding'            : 'same',
 		'kernel_initializer' : tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01, seed=None),
-		'bias_initializer'	 : 'zeros'
+		'bias_initializer'   : 'zeros'
 	}
 
 	if tf.keras.backend.image_data_format() == 'channels_first':
-		inputs	= tf.keras.layers.Input(shape=(pyramid_feature_size, None, None))
+		inputs = tf.keras.layers.Input(shape=(pyramid_feature_size, None, None))
 	else:
-		inputs	= tf.keras.layers.Input(shape=(None, None, pyramid_feature_size))
+		inputs = tf.keras.layers.Input(shape=(None, None, pyramid_feature_size))
 	outputs = inputs
 	for i in range(4):
 		outputs = tf.keras.layers.Conv2D(
@@ -107,6 +110,7 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 	outputs = tf.keras.layers.Reshape((-1, num_values), name='pyramid_regression_reshape')(outputs)
 
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
+
 
 def default_submodels(num_classes, num_anchors):
 	""" Create a list of default submodels used for object detection.
@@ -152,20 +156,20 @@ def retinanet(
 	inputs,
 	backbone_layers,
 	num_classes,
-	num_anchors				= None,
+	num_anchors             = None,
 	create_pyramid_features = fpn.create_pyramid_features,
-	submodels				= None,
-	name					= 'retinanet'
+	submodels               = None,
+	name                    = 'retinanet'
 ):
 	""" Construct a RetinaNet model on top of a backbone.
 	This model is the minimum model necessary for training (with the unfortunate exception of anchors as output).
 	Args
-		inputs					: keras.layers.Input (or list of) for the input to the model.
-		num_classes				: Number of classes to classify.
-		num_anchors				: Number of base anchors.
+		inputs                  : keras.layers.Input (or list of) for the input to the model.
+		num_classes             : Number of classes to classify.
+		num_anchors             : Number of base anchors.
 		create_pyramid_features : Functor for creating pyramid features given the features C3, C4, C5 from the backbone.
-		submodels				: Submodels to run on each feature map (default is regression and classification submodels).
-		name					: Name of the model.
+		submodels               : Submodels to run on each feature map (default is regression and classification submodels).
+		name                    : Name of the model.
 	Returns
 		A keras.models.Model which takes an image as input and outputs generated anchors and the result from each submodel on every pyramid level.
 		The order of the outputs is as defined in submodels:
@@ -177,18 +181,17 @@ def retinanet(
 	"""
 
 	if num_anchors is None:
-		#num_anchors = AnchorParameters.default.num_anchors()
-		num_anchors = 9
+		num_anchors = AnchorParameters.default.num_anchors()
 
 	if submodels is None:
 		submodels = default_submodels(num_classes, num_anchors)
 
 	C3, C4, C5 = backbone_layers
 
-	# compute pyramid features as per https://arxiv.org/abs/1708.02002
+	# Compute pyramid features as per https://arxiv.org/abs/1708.02002.
 	features = create_pyramid_features(C3, C4, C5)
 
-	# for all pyramid levels, run available submodels
+	# For all pyramid levels, run available submodels.
 	pyramids = fpn.build_pyramid(submodels, features)
 
 	return tf.keras.models.Model(inputs=inputs, outputs=pyramids, name=name)
@@ -226,37 +229,37 @@ def retinanet_bbox(
 		```
 	"""
 
-	# if no anchor parameters are passed, use default values
+	# If no anchor parameters are passed, use default values.
 	if anchor_params is None:
 		anchor_params = AnchorParameters.default
 
-	# create RetinaNet model
+	# Create RetinaNet model.
 	if model is None:
 		model = retinanet(num_anchors=anchor_params.num_anchors(), **kwargs)
 	else:
 		assert_training_model(model)
 
-	# compute the anchors
+	# Compute the anchors.
 	features = [model.get_layer(p_name).output for p_name in ['P3', 'P4', 'P5', 'P6', 'P7']]
 	anchors = build_anchors(anchor_params, features)
 
-	# we expect the anchors, regression and classification values as first output
+	# We expect the anchors, regression and classification values as first output.
 	regression     = model.outputs[0]
 	classification = model.outputs[1]
 
-	# "other" can be any additional output from custom submodels, by default this will be []
+	# "other" can be any additional output from custom submodels, by default this will be [].
 	other = model.outputs[2:]
 
-	# apply predicted regression to anchors
+	# Apply predicted regression to anchors.
 	boxes = layers.RegressBoxes(name='boxes')([anchors, regression])
 	boxes = layers.ClipBoxes(name='clipped_boxes')([model.inputs[0], boxes])
 
-	# filter detections (apply NMS / score threshold / select top-k)
+	# Filter detections (apply NMS / score threshold / select top-k).
 	detections = layers.FilterDetections(
 		nms                   = nms,
 		class_specific_filter = class_specific_filter,
 		name                  = 'filtered_detections'
 	)([boxes, classification] + other)
 
-	# construct the model
+	# Construct the model.
 	return tf.keras.models.Model(inputs=model.inputs, outputs=detections, name=name)

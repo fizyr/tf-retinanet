@@ -11,7 +11,7 @@ from ..utils.anchors import (
 )
 
 # TODO parse it using the yaml
-from ..utils.config import parse_anchor_parameters 
+from ..utils.config import parse_anchor_parameters
 
 from ..utils.image import (
 	TransformParameters,
@@ -45,32 +45,32 @@ class Generator(tf.keras.utils.Sequence):
 
 		Args
 			transform_generator    : A generator used to randomly transform images and annotations.
-			batch_size			   : The size of the batches to generate.
-			group_method		   : Determines how images are grouped together (defaults to 'ratio', one of ('none', 'random', 'ratio')).
-			shuffle_groups		   : If True, shuffles the groups each epoch.
-			image_min_side		   : After resizing the minimum side of an image is equal to image_min_side.
-			image_max_side		   : If after resizing the maximum side is larger than image_max_side, scales down further so that the max side is equal to image_max_side.
+			batch_size             : The size of the batches to generate.
+			group_method           : Determines how images are grouped together (defaults to 'ratio', one of ('none', 'random', 'ratio')).
+			shuffle_groups         : If True, shuffles the groups each epoch.
+			image_min_side         : After resizing the minimum side of an image is equal to image_min_side.
+			image_max_side         : If after resizing the maximum side is larger than image_max_side, scales down further so that the max side is equal to image_max_side.
 			transform_parameters   : The transform parameters used for data augmentation.
 			compute_anchor_targets : Function handler for computing the targets of anchors for an image and its annotations.
-			compute_shapes		   : Function handler for computing the shapes of the pyramid for a given input.
-			preprocess_image	   : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
+			compute_shapes         : Function handler for computing the shapes of the pyramid for a given input.
+			preprocess_image       : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
 		"""
-		self.transform_generator	= transform_generator
-		self.batch_size				= int(batch_size)
-		self.group_method			= group_method
-		self.shuffle_groups			= shuffle_groups
-		self.image_min_side			= image_min_side
-		self.image_max_side			= image_max_side
-		self.transform_parameters	= transform_parameters or TransformParameters()
+		self.transform_generator    = transform_generator
+		self.batch_size             = int(batch_size)
+		self.group_method           = group_method
+		self.shuffle_groups         = shuffle_groups
+		self.image_min_side         = image_min_side
+		self.image_max_side         = image_max_side
+		self.transform_parameters   = transform_parameters or TransformParameters()
 		self.compute_anchor_targets = compute_anchor_targets
-		self.compute_shapes			= compute_shapes
-		self.preprocess_image		= preprocess_image
-		self.config					= config
+		self.compute_shapes         = compute_shapes
+		self.preprocess_image       = preprocess_image
+		self.config                 = config
 
-		# Define groups
+		# Define groups.
 		self.group_images()
 
-		# Shuffle when initializing
+		# Shuffle when initializing.
 		if self.shuffle_groups:
 			self.on_epoch_end()
 
@@ -137,9 +137,9 @@ class Generator(tf.keras.utils.Sequence):
 	def filter_annotations(self, image_group, annotations_group, group):
 		""" Filter annotations by removing those that are outside of the image bounds or whose width/height < 0.
 		"""
-		# test all annotations
+		# Test all annotations.
 		for index, (image, annotations) in enumerate(zip(image_group, annotations_group)):
-			# test x2 < x1 | y2 < y1 | x1 < 0 | y1 < 0 | x2 <= 0 | y2 <= 0 | x2 >= image.shape[1] | y2 >= image.shape[0]
+			# Test x2 < x1 | y2 < y1 | x1 < 0 | y1 < 0 | x2 <= 0 | y2 <= 0 | x2 >= image.shape[1] | y2 >= image.shape[0].
 			invalid_indices = np.where(
 				(annotations['bboxes'][:, 2] <= annotations['bboxes'][:, 0]) |
 				(annotations['bboxes'][:, 3] <= annotations['bboxes'][:, 1]) |
@@ -149,7 +149,7 @@ class Generator(tf.keras.utils.Sequence):
 				(annotations['bboxes'][:, 3] > image.shape[0])
 			)[0]
 
-			# delete invalid indices
+			# Delete invalid indices.
 			if len(invalid_indices):
 				warnings.warn('Image with id {} (shape {}) contains the following invalid boxes: {}.'.format(
 					group[index],
@@ -169,12 +169,12 @@ class Generator(tf.keras.utils.Sequence):
 	def random_transform_group_entry(self, image, annotations, transform=None):
 		""" Randomly transforms image and annotation.
 		"""
-		# randomly transform both image and annotations
+		# Randomly transform both image and annotations.
 		if transform is not None or self.transform_generator:
 			if transform is None:
 				transform = adjust_transform_for_image(next(self.transform_generator), image, self.transform_parameters.relative_translation)
 
-			# apply transformation to image
+			# Apply transformation to image.
 			image = apply_transform(transform, image, self.transform_parameters)
 
 			# Transform the bounding boxes in the annotations.
@@ -191,7 +191,7 @@ class Generator(tf.keras.utils.Sequence):
 		assert(len(image_group) == len(annotations_group))
 
 		for index in range(len(image_group)):
-			# transform a single group entry
+			# Transform a single group entry.
 			image_group[index], annotations_group[index] = self.random_transform_group_entry(image_group[index], annotations_group[index])
 
 		return image_group, annotations_group
@@ -204,16 +204,16 @@ class Generator(tf.keras.utils.Sequence):
 	def preprocess_group_entry(self, image, annotations):
 		""" Preprocess image and its annotations.
 		"""
-		# preprocess the image
+		# Preprocess the image.
 		image = self.preprocess_image(image)
 
-		# resize image
+		# Resize image.
 		image, image_scale = self.resize_image(image)
 
-		# apply resizing to annotations too
+		# Apply resizing to annotations too.
 		annotations['bboxes'] *= image_scale
 
-		# convert to the wanted keras floatx
+		# Convert to the wanted keras floatx.
 		image = tf.keras.backend.cast_to_floatx(image)
 
 		return image, annotations
@@ -224,7 +224,7 @@ class Generator(tf.keras.utils.Sequence):
 		assert(len(image_group) == len(annotations_group))
 
 		for index in range(len(image_group)):
-			# preprocess a single group entry
+			# Preprocess a single group entry.
 			image_group[index], annotations_group[index] = self.preprocess_group_entry(image_group[index], annotations_group[index])
 
 		return image_group, annotations_group
@@ -232,26 +232,26 @@ class Generator(tf.keras.utils.Sequence):
 	def group_images(self):
 		""" Order the images according to self.order and makes groups of self.batch_size.
 		"""
-		# determine the order of the images
+		# Determine the order of the images.
 		order = list(range(self.size()))
 		if self.group_method == 'random':
 			random.shuffle(order)
 		elif self.group_method == 'ratio':
 			order.sort(key=lambda x: self.image_aspect_ratio(x))
 
-		# divide into groups, one group = one batch
+		# Divide into groups, one group = one batch.
 		self.groups = [[order[x % len(order)] for x in range(i, i + self.batch_size)] for i in range(0, len(order), self.batch_size)]
 
 	def compute_inputs(self, image_group):
 		""" Compute inputs for the network using an image_group.
 		"""
-		# get the max image shape
+		# Get the max image shape.
 		max_shape = tuple(max(image.shape[x] for image in image_group) for x in range(3))
 
-		# construct an image batch object
+		# Construct an image batch object.
 		image_batch = np.zeros((self.batch_size,) + max_shape, dtype=tf.keras.backend.floatx())
 
-		# copy all images to the upper left part of the image batch object
+		# Copy all images to the upper left part of the image batch object.
 		for image_index, image in enumerate(image_group):
 			image_batch[image_index, :image.shape[0], :image.shape[1], :image.shape[2]] = image
 
@@ -269,7 +269,7 @@ class Generator(tf.keras.utils.Sequence):
 	def compute_targets(self, image_group, annotations_group):
 		""" Compute target outputs for the network using images and their annotations.
 		"""
-		# get the max image shape
+		# Get the max image shape.
 		max_shape = tuple(max(image.shape[x] for image in image_group) for x in range(3))
 		anchors   = self.generate_anchors(max_shape)
 
@@ -285,23 +285,23 @@ class Generator(tf.keras.utils.Sequence):
 	def compute_input_output(self, group):
 		""" Compute inputs and target outputs for the network.
 		"""
-		# load images and annotations
-		image_group		  = self.load_image_group(group)
+		# Load images and annotations.
+		image_group       = self.load_image_group(group)
 		annotations_group = self.load_annotations_group(group)
 
-		# check validity of annotations
+		# Check validity of annotations.
 		image_group, annotations_group = self.filter_annotations(image_group, annotations_group, group)
 
-		# randomly transform data
+		# Randomly transform data.
 		image_group, annotations_group = self.random_transform_group(image_group, annotations_group)
 
-		# perform preprocessing steps
+		# Perform preprocessing steps.
 		image_group, annotations_group = self.preprocess_group(image_group, annotations_group)
 
-		# compute network inputs
+		# Compute network inputs.
 		inputs = self.compute_inputs(image_group)
 
-		# compute network targets
+		# Compute network targets.
 		targets = self.compute_targets(image_group, annotations_group)
 
 		return inputs, targets
@@ -322,13 +322,13 @@ class Generator(tf.keras.utils.Sequence):
 
 		return inputs, targets
 
+
 def get_generators(config, **kwargs):
 	try:
 		generator_name = config['generator']['name']
-		generator_pkg = __import__('generators', fromlist=[generator_name])
+		generator_pkg = __import__('tf_retinanet_generators', fromlist=[generator_name])
 		generator_pkg = getattr(generator_pkg, generator_name)
-	except:
+	except ImportError:
 		raise(config['generator']['name'] + 'is not a valid generator')
 
 	return generator_pkg.from_config(config['generator']['details'], **kwargs)
-

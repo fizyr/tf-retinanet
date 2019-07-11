@@ -15,8 +15,9 @@ callbacks:
   project_name:
 
 train:
-  steps_per_epoch: 100
+  steps_per_epoch: 10000
   epochs: 50
+  use_multiprocessing: false
   workers: 1
   max_queue_size: 10
   gpu: 0
