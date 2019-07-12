@@ -94,7 +94,11 @@ def create_callbacks(
 
 	# Evaluate the model.
 	if validation_generator:
-		print('Validation will be implemented.')
+		if not evaluation:
+			raise('Standard evaluation not implement yet.')
+		evaluation = evaluation(validation_generator)
+		evaluation = RedirectModel(evaluation, prediction_model)
+		callbacks.append(evaluation)
 
 	return callbacks
 
