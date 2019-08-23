@@ -75,7 +75,7 @@ def create_callbacks(
 	training_model,
 	prediction_model,
 	validation_generator=None,
-	evaluation=None
+	evaluation_callback=None
 ):
 	callbacks = []
 
@@ -94,11 +94,11 @@ def create_callbacks(
 
 	# Evaluate the model.
 	if validation_generator:
-		if not evaluation:
-			raise('Standard evaluation not implement yet.')
-		evaluation = evaluation(validation_generator)
-		evaluation = RedirectModel(evaluation, prediction_model)
-		callbacks.append(evaluation)
+		if not evaluation_callback:
+			raise('Standard evaluation_callback not implement yet.')
+		evaluation_callback = evaluation_callback(validation_generator)
+		evaluation_callback = RedirectModel(evaluation_callback, prediction_model)
+		callbacks.append(evaluation_callback)
 
 	return callbacks
 
@@ -128,9 +128,9 @@ def main():
 	validation_generator = None
 	if 'validation' in generators:
 		validation_generator = generators['validation']
-	evaluation = None
-	if 'custom_evaluation' in generators:
-		evaluation = generators['custom_evaluation']
+	evaluation_callback = None
+	if 'custom_evaluation_callback' in generators:
+		evaluation_callback = generators['custom_evaluation_callback']
 
 	# Create the models.
 	model            = backbone.retinanet(train_generator.num_classes())
@@ -144,7 +144,7 @@ def main():
 		training_model,
 		prediction_model,
 		validation_generator,
-		evaluation,
+		evaluation_callback,
 	)
 
 	# Print model.
