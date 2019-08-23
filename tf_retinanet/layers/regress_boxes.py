@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
+from .. import backend
+
 
 class RegressBoxes(tf.keras.layers.Layer):
 	""" Keras layer for applying regression values to boxes.
@@ -33,38 +35,7 @@ class RegressBoxes(tf.keras.layers.Layer):
 
 	def call(self, inputs, **kwargs):
 		anchors, regression = inputs
-
-		def _bbox_transform_inv(boxes, deltas, mean=None, std=None):
-			""" Applies deltas (usually regression results) to boxes (usually anchors).
-			Before applying the deltas to the boxes, the normalization that was previously applied (in the generator) has to be removed.
-			The mean and std are the mean and std as applied in the generator. They are unnormalized in this function and then applied to the boxes.
-			Args
-				boxes : np.array of shape (B, N, 4), where B is the batch size, N the number of boxes and 4 values for (x1, y1, x2, y2).
-				deltas: np.array of same shape as boxes. These deltas (d_x1, d_y1, d_x2, d_y2) are a factor of the width/height.
-				mean  : The mean value used when computing deltas (defaults to [0, 0, 0, 0]).
-				std   : The standard deviation used when computing deltas (defaults to [0.2, 0.2, 0.2, 0.2]).
-			Returns
-				A np.array of the same shape as boxes, but with deltas applied to each box.
-				The mean and std are used during training to normalize the regression values (networks love normalization).
-			"""
-			if mean is None:
-				mean = [0, 0, 0, 0]
-			if std is None:
-				std = [0.2, 0.2, 0.2, 0.2]
-
-			width  = boxes[:, :, 2] - boxes[:, :, 0]
-			height = boxes[:, :, 3] - boxes[:, :, 1]
-
-			x1 = boxes[:, :, 0] + (deltas[:, :, 0] * std[0] + mean[0]) * width
-			y1 = boxes[:, :, 1] + (deltas[:, :, 1] * std[1] + mean[1]) * height
-			x2 = boxes[:, :, 2] + (deltas[:, :, 2] * std[2] + mean[2]) * width
-			y2 = boxes[:, :, 3] + (deltas[:, :, 3] * std[3] + mean[3]) * height
-
-			pred_boxes = tf.keras.backend.stack([x1, y1, x2, y2], axis=2)
-
-			return pred_boxes
-
-		return _bbox_transform_inv(anchors, regression, mean=self.mean, std=self.std)
+		return backend.bbox_transform_inv(anchors, regression, mean=self.mean, std=self.std)
 
 	def compute_output_shape(self, input_shape):
 		return input_shape[0]
