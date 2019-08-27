@@ -24,7 +24,7 @@ def tf_version():
 	Returns
 		tuple of (major, minor, patch).
 	"""
-	return tuple(map(int, tf.version.VERSION.split('.')))
+	return tuple(map(int, tf.version.VERSION.split('-')[0].split('.')))
 
 
 def tf_version_ok(minimum_tf_version=MINIMUM_TF_VERSION):
