@@ -1,7 +1,7 @@
 class Backbone(object):
 	""" This class stores additional information on backbones.
 	"""
-	def __init__(self, backbone):
+	def __init__(self, config):
 		# a dictionary mapping custom layer names to the correct classes
 		from .. import layers
 		from .. import losses
@@ -17,7 +17,12 @@ class Backbone(object):
 			'_focal'           : losses.focal(),
 		}
 
-		self.backbone = backbone
+		self.backbone = config['type']
+		self.weights  = config['weights']
+		self.modifier = None
+		if config['freeze']:
+			from ..utils.model import freeze as freeze_model
+			self.modifier = freeze_model
 		self.validate()
 
 	def retinanet(self, *args, **kwargs):
@@ -37,6 +42,32 @@ class Backbone(object):
 		raise NotImplementedError('preprocess_image method not implemented.')
 
 
+def process_backbone_config(config):
+	# Get the backbone config.
+	backbone_config = config['backbone']['details']
+
+	# If the imagenet weights flag is set for the retinanet model set it for the backbone.
+	if 'train' in config and 'weights' in config['train'] and config['train']['weights'] == 'imagenet':
+		backbone_config['weights'] = 'imagenet'
+
+	# If the none weights flag is set for the retinanet model set it for the backbone.
+	if 'train' in config and 'weights' in config['train'] and config['train']['weights'] == 'none':
+		backbone_config['weights'] = 'none'
+
+	# If the weights flag is not set for the backbone set it to imagenet.
+	if 'weights' not in backbone_config:
+		backbone_config['weights'] = 'imagenet'
+
+	# If the weights flag is set to none pass it to the backbone.
+	if backbone_config['weights']  == 'none':
+		backbone_config['weights'] = None
+
+	# If freeze flag is not set, set it to false.
+	if 'freeze' not in backbone_config:
+		backbone_config['freeze'] = False
+	return backbone_config
+
+
 def get_backbone(config):
 	try:
 		backbone_name = config['backbone']['name']
@@ -45,4 +76,4 @@ def get_backbone(config):
 	except ImportError:
 		raise(config['backbone']['name'] + 'is not a valid backbone')
 
-	return backbone_pkg.from_config(config['backbone']['details'])
+	return backbone_pkg.from_config(process_backbone_config(config))
