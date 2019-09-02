@@ -1,3 +1,4 @@
+import argparse
 import yaml
 import sys
 import os
@@ -20,22 +21,54 @@ from ..utils.version import tf_version_ok
 
 
 def set_defaults(config):
-	if not config['callbacks']['snapshots_path']:
+	# Set defaults for backbone.
+	if 'backbone' not in config:
+		config['backbone'] = {}
+	if 'details' not in config['backbone']:
+		config['backbone']['details'] = {}
+
+	# Set defaults for generator.
+	if 'generator' not in config:
+		config['generator'] = {}
+	if 'details' not in config['generator']:
+		config['generator']['details'] = {}
+
+	# Set defaults for callbacks config.
+	if 'callbacks' not in config:
+		config['callbacks'] = {}
+	if ('snapshots_path' not in config['callbacks']) or (not config['callbacks']['snapshots_path']):
 		from pathlib import Path
 		home = str(Path.home())
 		config['callbacks']['snapshots_path'] = os.path.join(home, 'retinanet-snapshots')
-	if not config['callbacks']['project_name']:
+	if ('project_name' not in config['callbacks']) or (not config['callbacks']['project_name']):
 		from datetime import datetime
 		config['callbacks']['project_name'] = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+
+	# Set defaults for train config.
+	if 'train' not in config:
+		config['train'] = {}
+	if 'steps_per_epoch' not in config['train']:
+		config['train']['steps_per_epoch'] = 10000
+	if 'epochs' not in config['train']:
+		config['train']['epochs'] = 50
+	if 'use_multiprocessing' not in config['train']:
+		config['train']['use_multiprocessing'] = False
+	if 'workers' not in config['train']:
+		config['train']['workers'] = 1
+	if 'max_queue_size' not in config['train']:
+		config['train']['max_queue_size'] = 10
+	if 'gpu' not in config['train']:
+		config['train']['gpu'] = 1
+	if 'lr' not in config['train']:
+		config['train']['lr'] = 1e-5
 	return config
 
 
-def parse_yaml():
-	# TODO get the filename using a parser
-	with open(sys.argv[1], 'r') as stream:
+def parse_yaml(path):
+	with open(path, 'r') as stream:
 		try:
 			config = yaml.safe_load(stream)
-			return set_defaults(config)
+			return config
 		except yaml.YAMLError as exc:
 			raise(exc)
 
@@ -99,9 +132,99 @@ def create_callbacks(
 	return callbacks
 
 
-def main():
+def parse_args(args):
+	""" Parse the arguments.
+	"""
+	parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+	parser.add_argument('--config',    help='Config file.', default=None,        type=str)
+	parser.add_argument('--backbone',  help='Backbone model used by retinanet.', type=str)
+	parser.add_argument('--generator', help='Generator used by retinanet.',      type=str)
+
+	# Backone config.
+	parser.add_argument('--freeze-backbone',  help='Freeze training of backbone layers.', action='store_true')
+	parser.add_argument('--backbone-weights', help='Weights for the backbone.',           type=str)
+
+	# Generator config.
+	parser.add_argument('--random-transform',        help='Randomly transform image and annotations.',           action='store_true')
+	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.', action='store_true')
+	parser.add_argument('--batch-size',       help='Size of the batches.', type=int)
+	parser.add_argument('--group-method', help='Determines how images are grouped together("none", "random", "ratio").', type=str)
+	parser.add_argument('--shuffle_groups',  help='If True, shuffles the groups each epoch.',           action='store_true')
+	parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.', type=int)
+	parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.', type=int)
+
+	# Train config.
+	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi).')
+	parser.add_argument('--epochs',           help='Number of epochs to train.',                                 type=int)
+	parser.add_argument('--steps',            help='Number of steps per epoch.',                                 type=int)
+	parser.add_argument('--lr',               help='Learning rate.',                                             type=float)
+	parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.',                      action='store_true')
+	parser.add_argument('--workers',          help='Number of generator workers.',                               type=int)
+	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.', type=int)
+
+	return parser.parse_args(args)
+
+
+def set_args(config, args):
+	if args.backbone:
+		config['backbone']['name'] = args.backbone
+	if args.generator:
+		config['generator']['name'] = args.generator
+
+	# Backbone config.
+	if args.freeze_backbone:
+		config['backbone']['details']['freeze'] = args.freeze_backbone
+	if args.backbone_weights:
+		config['backbone']['details']['weights'] = args.backbone_weights
+
+	# Generator config.
+	if args.random_transform:
+		config['generator']['details']['transform_generator'] = 'random'
+	if args.random_visual_effect:
+		config['generator']['details']['visual_effect_generator'] = 'random'
+	if args.batch_size:
+		config['generator']['details']['batch_size'] = args.batch_size
+	if args.group_method:
+		config['generator']['details']['group_method'] = args.group_method
+	if args.shuffle_groups:
+		config['generator']['details']['shuffle_groups'] = args.shuffle_groups
+	if args.image_min_side:
+		config['generator']['details']['image_min_side'] = args.image_min_side
+	if args.image_max_side:
+		config['generator']['details']['image_max_side'] = args.image_max_side
+
+	# Train config.
+	if args.gpu:
+		config['train']['gpu'] = args.gpu
+	if args.epochs:
+		config['train']['epochs'] = args.epochs
+	if args.steps:
+		config['train']['steps_per_epoch'] = args.steps
+	if args.lr:
+		config['train']['lr'] = args.lr
+	if args.multiprocessing:
+		config['train']['use_multiprocessing'] = args.multiprocessing
+	if args.workers:
+		config['train']['workers'] = args.workers
+	if args.max_queue_size:
+		config['train']['max_queue_size'] = args.max_queue_size
+	return config
+
+
+def main(args=None):
+	# Parse command line arguments.
+	if args is None:
+		args = sys.argv[1:]
+	args = parse_args(args)
+
 	# Parse the configuration file.
-	config = parse_yaml()
+	config = {}
+	if args.config:
+		config = parse_yaml(args.config)
+	config = set_defaults(config)
+
+	# Apply the command line arguments to config.
+	config = set_args(config, args)
 
 	# Disable eager, prevents memory leak and makes training faster.
 	tf.compat.v1.disable_eager_execution()
@@ -152,7 +275,7 @@ def main():
 			'regression'    : losses.smooth_l1(),
 			'classification': losses.focal()
 		},
-		optimizer=tf.keras.optimizers.Adam(lr=1e-5)
+		optimizer=tf.keras.optimizers.Adam(lr=float(config['train']['lr']))
 	)
 
 	# Parse training parameters.
