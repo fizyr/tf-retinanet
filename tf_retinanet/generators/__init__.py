@@ -92,9 +92,9 @@ def preprocess_config(config):
 	if 'compute_shapes' not in config:
 		config['compute_shapes'] = guess_shapes
 
-	# If the anchors_config flag is set it to default value.
-	if 'anchors_config' not in config:
-		config['anchors_config'] = None
+	# If the anchors flag is set it to default value.
+	if 'anchors' not in config:
+		config['anchors'] = None
 
 	return config
 

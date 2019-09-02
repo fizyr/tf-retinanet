@@ -47,4 +47,4 @@ train:
   use_multiprocessing: false
   workers: 1
   max_queue_size: 10
-  gpu: 0
+  gpu: 1
