@@ -163,7 +163,7 @@ def main():
 			'regression'    : losses.smooth_l1(),
 			'classification': losses.focal()
 		},
-		optimizer=tf.keras.optimizers.Adam(lr=1e-5, clipnorm=0.001)
+		optimizer=tf.keras.optimizers.Adam(lr=1e-5)
 	)
 
 	# Parse training parameters.
