@@ -158,6 +158,14 @@ def main():
 	# Parse training parameters.
 	train_config = config['train']
 
+	# Dump the training config in the same folder as the weights.
+	with open(os.path.join(
+		config['callbacks']['snapshots_path'],
+		config['callbacks']['project_name'],
+		'config.yaml'
+	), 'w') as dump_config:
+		yaml.dump(config, dump_config, default_flow_style=False)
+
 	# Start training.
 	return training_model.fit_generator(
 		generator=train_generator,
