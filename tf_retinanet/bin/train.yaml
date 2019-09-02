@@ -47,3 +47,4 @@ train:
   workers: 1
   max_queue_size: 10
   gpu: 1
+  lr: 1e-5
