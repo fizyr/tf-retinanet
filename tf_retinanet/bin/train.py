@@ -19,17 +19,6 @@ from ..generators import get_generators
 from ..utils.version import tf_version_ok
 
 
-def makedirs(path):  # TODO still needed?
-	# Intended behavior: try to create the directory,
-	# pass if the directory exists already, fails otherwise.
-	# Meant for Python 2.7/3.n compatibility.
-	try:
-		os.makedirs(path)
-	except OSError:
-		if not os.path.isdir(path):
-			raise
-
-
 def set_defaults(config):
 	if not config['callbacks']['snapshots_path']:
 		from pathlib import Path
@@ -87,7 +76,7 @@ def create_callbacks(
 	callbacks = []
 
 	# Save snapshots of the model.
-	makedirs(os.path.join(config['snapshots_path'], config['project_name']))
+	os.makedirs(os.path.join(config['snapshots_path'], config['project_name']))
 	checkpoint = tf.keras.callbacks.ModelCheckpoint(
 		os.path.join(
 			config['snapshots_path'],
