@@ -21,8 +21,6 @@ from ..utils.image import (
 from ..utils.transform import transform_aabb
 
 
-
-
 class Generator(tf.keras.utils.Sequence):
 	""" Abstract generator class.
 	"""
@@ -67,8 +65,8 @@ class Generator(tf.keras.utils.Sequence):
 		self.compute_shapes         = compute_shapes
 		self.preprocess_image       = preprocess_image
 		self.anchor_params = None
-		if anchors_config:
 
+		if anchors_config:
 			def parse_anchor_parameters(anchors_config):
 				ratios  = np.array(anchors_config['ratios'], tf.keras.backend.floatx())
 				scales  = np.array(anchors_config['scales'], tf.keras.backend.floatx())
@@ -86,6 +84,12 @@ class Generator(tf.keras.utils.Sequence):
 			self.on_epoch_end()
 
 	def __from_config__(self, config, preprocess_image):
+		""" Initialize Generator object from a configuration.
+
+		Args
+			config           : Configuration for the generator.
+			preprocess_image : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
+		"""
 		Generator.__init__(
 			self,
 			transform_generator    = config['transform_generator'],

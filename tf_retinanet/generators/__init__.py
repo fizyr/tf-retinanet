@@ -13,16 +13,16 @@ from ..utils.image import (
 
 
 def preprocess_config(config):
-	# If the transform_generator flag is set it to default value.
+	# If the transform_generator flag is not present, set it to default value.
 	if 'transform_generator' not in config:
 		from ..utils.transform import random_transform_generator
 		config['transform_generator'] = random_transform_generator(flip_x_chance=0.5)
 
-	# If the transform_generator flag is set to none pass it to the generator.
+	# If the transform_generator flag is set to none, set it to None.
 	if config['transform_generator']  == 'none':
 		config['transform_generator'] = None
 
-	# If the transform_generator flag is set to random pass it to the generator.
+	# If the transform_generator flag is set to random, set it to the random preset.
 	if config['transform_generator']  == 'random':
 		from ..utils.transform import random_transform_generator
 		config['transform_generator'] = transform_generator = random_transform_generator(
@@ -38,15 +38,15 @@ def preprocess_config(config):
 			flip_y_chance=0.5,
 		)
 
-	# If the visual_effect_generator flag is set it to default value.
+	# If the visual_effect_generator flag is not present, set it to default value.
 	if 'visual_effect_generator' not in config:
 		config['visual_effect_generator'] = None
 
-	# If the visual_effect_generator flag is set to none pass it to the generator.
+	# If the visual_effect_generator flag is set to none, set it to None.
 	if config['visual_effect_generator']  == 'none':
 		config['visual_effect_generator'] = None
 
-	# If the visual_effect_generator flag is set to random pass it to the generator.
+	# If the visual_effect_generator flag is set to random, set it to the random preset.
 	if config['visual_effect_generator']  == 'random':
 		from ..utils.image import random_visual_effect_generator
 		config['visual_effect_generator'] = random_visual_effect_generator(
@@ -56,43 +56,43 @@ def preprocess_config(config):
 			saturation_range=(0.95, 1.05)
 		)
 
-	# If the batch_size flag is set it to default value.
+	# If the batch_size flag is not present, set it to default value.
 	if 'batch_size' not in config:
 		config['batch_size'] = 1
 
-	# If the group_method flag is set it to default value.
+	# If the group_method flag is not present, set it to default value.
 	if 'group_method' not in config:
 		config['group_method'] = 'ratio' # one of 'none', 'random', 'ratio'
 
-	# If the shuffle_groups flag is set it to default value.
+	# If the shuffle_groups flag is not present, set it to default value.
 	if 'shuffle_groups' not in config:
 		config['shuffle_groups'] = True
 
-	# If the image_min_side flag is set it to default value.
+	# If the image_min_side flag is not present, set it to default value.
 	if 'image_min_side' not in config:
 		config['image_min_side'] = 800
 
-	# If the image_max_side flag is set it to default value.
+	# If the image_max_side flag is not present, set it to default value.
 	if 'image_max_side' not in config:
 		config['image_max_side'] = 1333
 
-	# If the transform_parameters flag is set it to default value.
+	# If the transform_parameters flag is not present, set it to default value.
 	if 'transform_parameters' not in config:
 		config['transform_parameters'] = TransformParameters()
 
-	# If the transform_parameters flag is set to none pass it to the generator.
+	# If the transform_parameters flag is set to none, set it to None.
 	if config['transform_parameters']  == 'none':
 		config['transform_parameters'] = None
 
-	# If the compute_anchor_targets flag is set it to default value.
+	# If the compute_anchor_targets flag is not present, set it to default value.
 	if 'compute_anchor_targets' not in config:
 		config['compute_anchor_targets'] = anchor_targets_bbox
 
-	# If the compute_shapes flag is set it to default value.
+	# If the compute_shapes flag is not present, set it to default value.
 	if 'compute_shapes' not in config:
 		config['compute_shapes'] = guess_shapes
 
-	# If the anchors flag is set it to default value.
+	# If the anchors flag is not present, set it to default value.
 	if 'anchors' not in config:
 		config['anchors'] = None
 
