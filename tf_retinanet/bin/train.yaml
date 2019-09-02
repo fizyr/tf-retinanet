@@ -1,9 +1,9 @@
 backbone:
-  name: legacy-resnet
+  name: resnet
   details:
     type: resnet50
     weights: imagenet
-    freeze: true
+    freeze: false
 
 generator:
   name: coco
@@ -11,6 +11,30 @@ generator:
     data_dir: /srv/datasets/COCO/
     train_set_name: train2017
     validation_set_name: val2017
+    transform_generator: random
+    visual_effect_generator: none
+    batch_size: 2
+    anchors:
+      sizes:
+        - 32
+        - 64
+        - 128
+        - 256
+        - 512
+      strides:
+        - 8
+        - 16
+        - 32
+        - 64
+        - 128
+      ratios:
+        - 0.5
+        - 1
+        - 2
+      scales:
+        - 1
+        - 1.2599210498948732
+        - 1.5874010519681994
 
 callbacks:
   snapshots_path:
@@ -18,8 +42,8 @@ callbacks:
 
 train:
   steps_per_epoch: 10000
-  epochs: 50
+  epochs: 100
   use_multiprocessing: false
   workers: 1
   max_queue_size: 10
-  gpu: 0
+  gpu: 1
