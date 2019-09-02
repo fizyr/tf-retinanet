@@ -61,6 +61,8 @@ def set_defaults(config):
 		config['train']['gpu'] = 1
 	if 'lr' not in config['train']:
 		config['train']['lr'] = 1e-5
+	if 'weights' not in config['train']:
+		config['train']['weights'] = None
 	return config
 
 
@@ -145,13 +147,13 @@ def parse_args(args):
 	parser.add_argument('--backbone-weights', help='Weights for the backbone.',           type=str)
 
 	# Generator config.
-	parser.add_argument('--random-transform',        help='Randomly transform image and annotations.',           action='store_true')
-	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.', action='store_true')
-	parser.add_argument('--batch-size',       help='Size of the batches.', type=int)
+	parser.add_argument('--random-transform',        help='Randomly transform image and annotations.',                   action='store_true')
+	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.',             action='store_true')
+	parser.add_argument('--batch-size',       help='Size of the batches.',                                               type=int)
 	parser.add_argument('--group-method', help='Determines how images are grouped together("none", "random", "ratio").', type=str)
-	parser.add_argument('--shuffle_groups',  help='If True, shuffles the groups each epoch.',           action='store_true')
-	parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.', type=int)
-	parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.', type=int)
+	parser.add_argument('--shuffle_groups',  help='If True, shuffles the groups each epoch.',                            action='store_true')
+	parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.',                type=int)
+	parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.',     type=int)
 
 	# Train config.
 	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi).')
@@ -161,6 +163,7 @@ def parse_args(args):
 	parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.',                      action='store_true')
 	parser.add_argument('--workers',          help='Number of generator workers.',                               type=int)
 	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.', type=int)
+	parser.add_argument('--weights',          help='Initialize the model with weights from a file.',             type=str)
 
 	return parser.parse_args(args)
 
@@ -208,6 +211,8 @@ def set_args(config, args):
 		config['train']['workers'] = args.workers
 	if args.max_queue_size:
 		config['train']['max_queue_size'] = args.max_queue_size
+	if args.weights:
+		config['train']['weights'] = args.weights
 	return config
 
 
@@ -251,10 +256,18 @@ def main(args=None):
 	if 'custom_evaluation_callback' in generators:
 		evaluation_callback = generators['custom_evaluation_callback']
 
-	# Create the models.
-	model            = backbone.retinanet(train_generator.num_classes())
+	# Create the model.
+	model = backbone.retinanet(train_generator.num_classes())
+
+	# If needed load weights.
+	if config['train']['weights'] is not None and config['train']['weights'] is not 'imagenet':
+		model.load_weights(config['train']['weights'], by_name=True)
+
+	# Create prediction model.
 	training_model   = model
 	prediction_model = models.retinanet.retinanet_bbox(training_model)
+
+
 
 	# Create the callbacks.
 	callbacks = create_callbacks(
