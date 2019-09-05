@@ -80,12 +80,6 @@ def set_args(config, args):
 	if args.generator:
 		config['generator']['name'] = args.generator
 
-	# Backbone config.
-	if args.freeze_backbone:
-		config['backbone']['details']['freeze'] = args.freeze_backbone
-	if args.backbone_weights:
-		config['backbone']['details']['weights'] = args.backbone_weights
-
 	# Generator config.
 	if args.image_min_side:
 		config['generator']['details']['image_min_side'] = args.image_min_side
@@ -150,11 +144,17 @@ def main(args=None):
 	model = models.load_model(config['evaluate']['weights'], backbone=backbone)
 
 	# Create prediction model.
-	prediction_model = models.retinanet.retinanet_bbox(model)
+	if config['evaluate']['convert_model']:
+		# Optionally load anchors parameters.
+		anchor_params = None
+		if 'anchors' in config['generator']['details']:
+			anchor_params = parse_anchor_parameters(config['generator']['details']['anchors'])
+
+		model = models.retinanet.convert_model(model, anchor_params=anchor_params)
 
 	if not evaluation:
 		raise('Standard evaluation not implement yet.')
-	evaluation = evaluation(test_generator, prediction_model)
+	evaluation = evaluation(test_generator, model)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 from . import retinanet  # noqa: F401
+import sys
 
 def load_model(filepath, backbone):
 	""" Loads a retinanet model using the correct custom objects.

@@ -13,6 +13,17 @@ def assert_training_model(model):
 		"Input is not a training model (no 'regression' and 'classification' outputs were found, outputs are: {}).".format(model.output_names)
 
 
+def check_training_model(model):
+	""" Check that model is a training model and exit otherwise.
+	"""
+	try:
+		assert_training_model(model)
+	except AssertionError as e:
+		import sys
+		print(e, file=sys.stderr)
+		sys.exit(1)
+
+
 def default_classification_model(
 	num_classes,
 	num_anchors,
@@ -263,3 +274,19 @@ def retinanet_bbox(
 
 	# Construct the model.
 	return tf.keras.models.Model(inputs=model.inputs, outputs=detections, name=name)
+
+
+def convert_model(model, nms=True, class_specific_filter=True, anchor_params=None):
+	""" Converts a training model to an inference model.
+	Args
+		model                 : A retinanet training model.
+		nms                   : Boolean, whether to add NMS filtering to the converted model.
+		class_specific_filter : Whether to use class specific filtering or filter for the best scoring class only.
+		anchor_params         : Anchor parameters object. If omitted, default values are used.
+	Returns
+		A tf.keras.models.Model object.
+	Raises
+		ImportError: if h5py is not available.
+		ValueError: In case of an invalid savefile.
+	"""
+	return retinanet_bbox(model=model, nms=nms, class_specific_filter=class_specific_filter, anchor_params=anchor_params)
