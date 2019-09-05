@@ -338,3 +338,12 @@ def bbox_transform(anchors, gt_boxes, mean=None, std=None):
 	targets = (targets - mean) / std
 
 	return targets
+
+
+def parse_anchor_parameters(anchors_config):
+	"""Parser anchors parameters from a dict."""
+	ratios  = np.array(anchors_config['ratios'], tf.keras.backend.floatx())
+	scales  = np.array(anchors_config['scales'], tf.keras.backend.floatx())
+	sizes   = anchors_config['sizes']
+	strides = anchors_config['strides']
+	return AnchorParameters(sizes, strides, ratios, scales)
