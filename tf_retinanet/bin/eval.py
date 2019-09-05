@@ -1,6 +1,6 @@
-import yaml
 import sys
 import os
+import argparse
 
 import tensorflow as tf
 
@@ -11,12 +11,14 @@ if __name__ == "__main__" and __package__ is None:
 	import tf_retinanet.bin  # noqa: F401
 	__package__ = "tf_retinanet.bin"
 
-from .. import losses
-from .. import models
-from ..backbones import get_backbone
-from ..callbacks import RedirectModel
-from ..generators import get_generators
-from ..utils.gpu import setup_gpu
+from ..              import losses
+from ..              import models
+from ..backbones     import get_backbone
+from ..callbacks     import RedirectModel
+from ..generators    import get_generators
+from ..utils.anchors import parse_anchor_parameters
+from ..utils.gpu     import setup_gpu
+from ..utils.yaml    import parse_yaml
 
 
 def set_defaults(config):
@@ -50,15 +52,6 @@ def set_defaults(config):
 	return config
 
 
-def parse_yaml(path):
-	with open(path, 'r') as stream:
-		try:
-			config = yaml.safe_load(stream)
-			return config
-		except yaml.YAMLError as exc:
-			raise(exc)
-
-
 def parse_args(args):
 	""" Parse the arguments.
 	"""
@@ -73,7 +66,7 @@ def parse_args(args):
 
 	# Evaluate config.
 	parser.add_argument('--convert-model',   help='Convert the model to an inference model (ie. the input is a training model).', action='store_true')
-	parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).')
+	parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.',          type=int)
 	parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',             type=float)
 	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',           type=float)
 	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                                  type=int)

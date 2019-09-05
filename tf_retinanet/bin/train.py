@@ -1,5 +1,4 @@
 import argparse
-import yaml
 import sys
 import os
 
@@ -12,12 +11,14 @@ if __name__ == "__main__" and __package__ is None:
 	import tf_retinanet.bin  # noqa: F401
 	__package__ = "tf_retinanet.bin"
 
-from .. import losses
-from .. import models
-from ..backbones import get_backbone
-from ..callbacks import RedirectModel
+from ..           import losses
+from ..           import models
+from ..backbones  import get_backbone
+from ..callbacks  import RedirectModel
 from ..generators import get_generators
-from ..utils.gpu import setup_gpu
+from ..utils.gpu  import setup_gpu
+from ..utils.yaml import parse_yaml
+from ..utils.yaml import dump_yaml
 
 
 def set_defaults(config):
@@ -64,15 +65,6 @@ def set_defaults(config):
 	if 'weights' not in config['train']:
 		config['train']['weights'] = None
 	return config
-
-
-def parse_yaml(path):
-	with open(path, 'r') as stream:
-		try:
-			config = yaml.safe_load(stream)
-			return config
-		except yaml.YAMLError as exc:
-			raise(exc)
 
 
 def create_callbacks(
@@ -131,14 +123,14 @@ def parse_args(args):
 	parser.add_argument('--image-max-side',       help='Rescale the image if the largest side is larger than max_side.',     type=int)
 
 	# Train config.
-	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi).')
-	parser.add_argument('--epochs',           help='Number of epochs to train.',                                 type=int)
-	parser.add_argument('--steps',            help='Number of steps per epoch.',                                 type=int)
-	parser.add_argument('--lr',               help='Learning rate.',                                             type=float)
-	parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.',                      action='store_true')
-	parser.add_argument('--workers',          help='Number of generator workers.',                               type=int)
-	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.', type=int)
-	parser.add_argument('--weights',          help='Initialize the model with weights from a file.',             type=str)
+	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.', type=int)
+	parser.add_argument('--epochs',           help='Number of epochs to train.',                                          type=int)
+	parser.add_argument('--steps',            help='Number of steps per epoch.',                                          type=int)
+	parser.add_argument('--lr',               help='Learning rate.',                                                      type=float)
+	parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.',                               action='store_true')
+	parser.add_argument('--workers',          help='Number of generator workers.',                                        type=int)
+	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.',          type=int)
+	parser.add_argument('--weights',          help='Initialize the model with weights from a file.',                      type=str)
 
 	return parser.parse_args(args)
 
@@ -268,12 +260,7 @@ def main(args=None):
 	train_config = config['train']
 
 	# Dump the training config in the same folder as the weights.
-	with open(os.path.join(
-		config['callbacks']['snapshots_path'],
-		config['callbacks']['project_name'],
-		'config.yaml'
-	), 'w') as dump_config:
-		yaml.dump(config, dump_config, default_flow_style=False)
+	dump_yaml(config)
 
 	# Start training.
 	return training_model.fit_generator(
