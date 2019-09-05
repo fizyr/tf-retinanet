@@ -17,8 +17,7 @@ from ..backbones  import get_backbone
 from ..callbacks  import RedirectModel
 from ..generators import get_generators
 from ..utils.gpu  import setup_gpu
-from ..utils.yaml import parse_yaml
-from ..utils.yaml import dump_yaml
+from ..utils.yaml import dump_yaml, parse_yaml
 
 
 def set_defaults(config):
@@ -64,6 +63,7 @@ def set_defaults(config):
 		config['train']['lr'] = 1e-5
 	if 'weights' not in config['train']:
 		config['train']['weights'] = None
+
 	return config
 
 
@@ -102,7 +102,7 @@ def create_callbacks(
 
 
 def parse_args(args):
-	""" Parse the arguments.
+	""" Parse the command line arguments.
 	"""
 	parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
 	parser.add_argument('--config',    help='Config file.', default=None,        type=str)
@@ -114,13 +114,13 @@ def parse_args(args):
 	parser.add_argument('--backbone-weights', help='Weights for the backbone.',           type=str)
 
 	# Generator config.
-	parser.add_argument('--random-transform',     help='Randomly transform image and annotations.',                   action='store_true')
-	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.',             action='store_true')
-	parser.add_argument('--batch-size',           help='Size of the batches.',                                               type=int)
+	parser.add_argument('--random-transform',     help='Randomly transform image and annotations.',                              action='store_true')
+	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.',                     action='store_true')
+	parser.add_argument('--batch-size',           help='Size of the batches.',                                                   type=int)
 	parser.add_argument('--group-method',         help='Determines how images are grouped together("none", "random", "ratio").', type=str)
-	parser.add_argument('--shuffle_groups',       help='If True, shuffles the groups each epoch.',                            action='store_true')
-	parser.add_argument('--image-min-side',       help='Rescale the image so the smallest side is min_side.',                type=int)
-	parser.add_argument('--image-max-side',       help='Rescale the image if the largest side is larger than max_side.',     type=int)
+	parser.add_argument('--shuffle_groups',       help='If True, shuffles the groups each epoch.',                               action='store_true')
+	parser.add_argument('--image-min-side',       help='Rescale the image so the smallest side is min_side.',                    type=int)
+	parser.add_argument('--image-max-side',       help='Rescale the image if the largest side is larger than max_side.',         type=int)
 
 	# Train config.
 	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.', type=int)
@@ -180,6 +180,7 @@ def set_args(config, args):
 		config['train']['max_queue_size'] = args.max_queue_size
 	if args.weights:
 		config['train']['weights'] = args.weights
+
 	return config
 
 

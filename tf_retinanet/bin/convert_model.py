@@ -39,10 +39,13 @@ def set_defaults(config):
 		config['convert']['nms'] = True
 	if 'class_specific_filter' not in config['convert']:
 		config['convert']['class_specific_filter'] = True
+
 	return config
 
 
 def parse_args(args):
+	""" Parse the command line arguments.
+	"""
 	parser = argparse.ArgumentParser(description='Script for converting a training model to an inference model.')
 
 	parser.add_argument('model_in',                   help='The model to convert.')

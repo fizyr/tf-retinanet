@@ -49,13 +49,15 @@ def set_defaults(config):
 		config['evaluate']['max_detections'] = 100
 	if 'weights' not in config['evaluate']:
 		config['evaluate']['weights'] = None
+
 	return config
 
 
 def parse_args(args):
-	""" Parse the arguments.
+	""" Parse the command line arguments.
 	"""
 	parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+
 	parser.add_argument('--config',    help='Config file.', default=None,        type=str)
 	parser.add_argument('--backbone',  help='Backbone model used by retinanet.', type=str)
 	parser.add_argument('--generator', help='Generator used by retinanet.',      type=str)
@@ -71,6 +73,7 @@ def parse_args(args):
 	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',           type=float)
 	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                                  type=int)
 	parser.add_argument('--weights',         help='Initialize the model with weights from a file.',                               type=str)
+
 	return parser.parse_args(args)
 
 
@@ -99,6 +102,7 @@ def set_args(config, args):
 		config['evaluate']['max_detections'] = args.max_detections
 	if args.weights:
 		config['evaluate']['weights'] = args.weights
+
 	return config
 
 
