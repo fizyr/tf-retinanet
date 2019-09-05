@@ -58,7 +58,7 @@ def set_defaults(config):
 	if 'max_queue_size' not in config['train']:
 		config['train']['max_queue_size'] = 10
 	if 'gpu' not in config['train']:
-		config['train']['gpu'] = 1
+		config['train']['gpu'] = 0
 	if 'lr' not in config['train']:
 		config['train']['lr'] = 1e-5
 	if 'weights' not in config['train']:
@@ -122,13 +122,13 @@ def parse_args(args):
 	parser.add_argument('--backbone-weights', help='Weights for the backbone.',           type=str)
 
 	# Generator config.
-	parser.add_argument('--random-transform',        help='Randomly transform image and annotations.',                   action='store_true')
+	parser.add_argument('--random-transform',     help='Randomly transform image and annotations.',                   action='store_true')
 	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.',             action='store_true')
-	parser.add_argument('--batch-size',       help='Size of the batches.',                                               type=int)
-	parser.add_argument('--group-method', help='Determines how images are grouped together("none", "random", "ratio").', type=str)
-	parser.add_argument('--shuffle_groups',  help='If True, shuffles the groups each epoch.',                            action='store_true')
-	parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.',                type=int)
-	parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.',     type=int)
+	parser.add_argument('--batch-size',           help='Size of the batches.',                                               type=int)
+	parser.add_argument('--group-method',         help='Determines how images are grouped together("none", "random", "ratio").', type=str)
+	parser.add_argument('--shuffle_groups',       help='If True, shuffles the groups each epoch.',                            action='store_true')
+	parser.add_argument('--image-min-side',       help='Rescale the image so the smallest side is min_side.',                type=int)
+	parser.add_argument('--image-max-side',       help='Rescale the image if the largest side is larger than max_side.',     type=int)
 
 	# Train config.
 	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi).')
@@ -241,8 +241,6 @@ def main(args=None):
 	# Create prediction model.
 	training_model   = model
 	prediction_model = models.retinanet.retinanet_bbox(training_model)
-
-
 
 	# Create the callbacks.
 	callbacks = create_callbacks(
