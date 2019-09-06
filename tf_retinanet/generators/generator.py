@@ -7,7 +7,7 @@ import tensorflow as tf
 from ..utils.anchors import (
 	anchor_targets_bbox,
 	anchors_for_shape,
-	AnchorParameters,
+	parse_anchor_parameters,
 	guess_shapes
 )
 
@@ -67,13 +67,6 @@ class Generator(tf.keras.utils.Sequence):
 		self.anchor_params = None
 
 		if anchors_config:
-			def parse_anchor_parameters(anchors_config):
-				ratios  = np.array(anchors_config['ratios'], tf.keras.backend.floatx())
-				scales  = np.array(anchors_config['scales'], tf.keras.backend.floatx())
-				sizes   = anchors_config['sizes']
-				strides = anchors_config['strides']
-				return AnchorParameters(sizes, strides, ratios, scales)
-
 			self.anchor_params = parse_anchor_parameters(anchors_config)
 
 		# Define groups.

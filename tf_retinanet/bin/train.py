@@ -1,5 +1,4 @@
 import argparse
-import yaml
 import sys
 import os
 
@@ -12,12 +11,13 @@ if __name__ == "__main__" and __package__ is None:
 	import tf_retinanet.bin  # noqa: F401
 	__package__ = "tf_retinanet.bin"
 
-from .. import losses
-from .. import models
-from ..backbones import get_backbone
-from ..callbacks import RedirectModel
+from ..           import losses
+from ..           import models
+from ..backbones  import get_backbone
+from ..callbacks  import RedirectModel
 from ..generators import get_generators
-from ..utils.version import tf_version_ok
+from ..utils.gpu  import setup_gpu
+from ..utils.yaml import dump_yaml, parse_yaml
 
 
 def set_defaults(config):
@@ -58,44 +58,13 @@ def set_defaults(config):
 	if 'max_queue_size' not in config['train']:
 		config['train']['max_queue_size'] = 10
 	if 'gpu' not in config['train']:
-		config['train']['gpu'] = 1
+		config['train']['gpu'] = 0
 	if 'lr' not in config['train']:
 		config['train']['lr'] = 1e-5
+	if 'weights' not in config['train']:
+		config['train']['weights'] = None
+
 	return config
-
-
-def parse_yaml(path):
-	with open(path, 'r') as stream:
-		try:
-			config = yaml.safe_load(stream)
-			return config
-		except yaml.YAMLError as exc:
-			raise(exc)
-
-
-def setup_gpu(gpu_id):
-	if tf_version_ok((2, 0, 0)):
-		gpus = tf.config.experimental.list_physical_devices('GPU')
-		if gpus:
-			# Restrict TensorFlow to only use the first GPU.
-			try:
-				# Currently, memory growth needs to be the same across GPUs.
-				for gpu in gpus:
-					tf.config.experimental.set_memory_growth(gpu, True)
-
-				# Use only the selcted gpu.
-				tf.config.experimental.set_visible_devices(gpus[gpu_id], 'GPU')
-			except RuntimeError as e:
-				# Visible devices must be set before GPUs have been initialized.
-				print(e)
-
-			logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-			print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-	else:
-		os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
-		config = tf.ConfigProto()
-		config.gpu_options.allow_growth = True
-		tf.keras.backend.set_session(tf.Session(config=config))
 
 
 def create_callbacks(
@@ -133,7 +102,7 @@ def create_callbacks(
 
 
 def parse_args(args):
-	""" Parse the arguments.
+	""" Parse the command line arguments.
 	"""
 	parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
 	parser.add_argument('--config',    help='Config file.', default=None,        type=str)
@@ -145,22 +114,23 @@ def parse_args(args):
 	parser.add_argument('--backbone-weights', help='Weights for the backbone.',           type=str)
 
 	# Generator config.
-	parser.add_argument('--random-transform',        help='Randomly transform image and annotations.',           action='store_true')
-	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.', action='store_true')
-	parser.add_argument('--batch-size',       help='Size of the batches.', type=int)
-	parser.add_argument('--group-method', help='Determines how images are grouped together("none", "random", "ratio").', type=str)
-	parser.add_argument('--shuffle_groups',  help='If True, shuffles the groups each epoch.',           action='store_true')
-	parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.', type=int)
-	parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.', type=int)
+	parser.add_argument('--random-transform',     help='Randomly transform image and annotations.',                              action='store_true')
+	parser.add_argument('--random-visual-effect', help='Randomly visually transform image and annotations.',                     action='store_true')
+	parser.add_argument('--batch-size',           help='Size of the batches.',                                                   type=int)
+	parser.add_argument('--group-method',         help='Determines how images are grouped together("none", "random", "ratio").', type=str)
+	parser.add_argument('--shuffle_groups',       help='If True, shuffles the groups each epoch.',                               action='store_true')
+	parser.add_argument('--image-min-side',       help='Rescale the image so the smallest side is min_side.',                    type=int)
+	parser.add_argument('--image-max-side',       help='Rescale the image if the largest side is larger than max_side.',         type=int)
 
 	# Train config.
-	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi).')
-	parser.add_argument('--epochs',           help='Number of epochs to train.',                                 type=int)
-	parser.add_argument('--steps',            help='Number of steps per epoch.',                                 type=int)
-	parser.add_argument('--lr',               help='Learning rate.',                                             type=float)
-	parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.',                      action='store_true')
-	parser.add_argument('--workers',          help='Number of generator workers.',                               type=int)
-	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.', type=int)
+	parser.add_argument('--gpu',              help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.', type=int)
+	parser.add_argument('--epochs',           help='Number of epochs to train.',                                          type=int)
+	parser.add_argument('--steps',            help='Number of steps per epoch.',                                          type=int)
+	parser.add_argument('--lr',               help='Learning rate.',                                                      type=float)
+	parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.',                               action='store_true')
+	parser.add_argument('--workers',          help='Number of generator workers.',                                        type=int)
+	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.',          type=int)
+	parser.add_argument('--weights',          help='Initialize the model with weights from a file.',                      type=str)
 
 	return parser.parse_args(args)
 
@@ -208,6 +178,9 @@ def set_args(config, args):
 		config['train']['workers'] = args.workers
 	if args.max_queue_size:
 		config['train']['max_queue_size'] = args.max_queue_size
+	if args.weights:
+		config['train']['weights'] = args.weights
+
 	return config
 
 
@@ -251,8 +224,14 @@ def main(args=None):
 	if 'custom_evaluation_callback' in generators:
 		evaluation_callback = generators['custom_evaluation_callback']
 
-	# Create the models.
-	model            = backbone.retinanet(train_generator.num_classes())
+	# Create the model.
+	model = backbone.retinanet(train_generator.num_classes())
+
+	# If needed load weights.
+	if config['train']['weights'] is not None and config['train']['weights'] is not 'imagenet':
+		model.load_weights(config['train']['weights'], by_name=True)
+
+	# Create prediction model.
 	training_model   = model
 	prediction_model = models.retinanet.retinanet_bbox(training_model)
 
@@ -282,12 +261,7 @@ def main(args=None):
 	train_config = config['train']
 
 	# Dump the training config in the same folder as the weights.
-	with open(os.path.join(
-		config['callbacks']['snapshots_path'],
-		config['callbacks']['project_name'],
-		'config.yaml'
-	), 'w') as dump_config:
-		yaml.dump(config, dump_config, default_flow_style=False)
+	dump_yaml(config)
 
 	# Start training.
 	return training_model.fit_generator(
