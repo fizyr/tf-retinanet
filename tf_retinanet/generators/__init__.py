@@ -1,15 +1,27 @@
-from .generator import Generator
+"""
+Copyright 2017-2019 Fizyr (https://fizyr.com)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
+from .generator import Generator  # noqa: F401
 
 from ..utils.anchors import (
 	anchor_targets_bbox,
-	anchors_for_shape,
 	guess_shapes
 )
 
-from ..utils.image import (
-	TransformParameters,
-	preprocess_image
-)
+from ..utils.image import TransformParameters
 
 
 def preprocess_config(config):
@@ -25,7 +37,7 @@ def preprocess_config(config):
 	# If the transform_generator flag is set to random, set it to the random preset.
 	if config['transform_generator']  == 'random':
 		from ..utils.transform import random_transform_generator
-		config['transform_generator'] = transform_generator = random_transform_generator(
+		config['transform_generator'] = random_transform_generator(
 			min_rotation=-0.1,
 			max_rotation=0.1,
 			min_translation=(-0.1, -0.1),
@@ -62,7 +74,7 @@ def preprocess_config(config):
 
 	# If the group_method flag is not present, set it to default value.
 	if 'group_method' not in config:
-		config['group_method'] = 'ratio' # one of 'none', 'random', 'ratio'
+		config['group_method'] = 'ratio'  # one of 'none', 'random', 'ratio'
 
 	# If the shuffle_groups flag is not present, set it to default value.
 	if 'shuffle_groups' not in config:
@@ -97,7 +109,6 @@ def preprocess_config(config):
 		config['anchors'] = None
 
 	return config
-
 
 
 def get_generators(config, preprocess_image, **kwargs):

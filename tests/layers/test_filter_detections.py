@@ -62,7 +62,7 @@ class TestFilterDetections(object):
 
 		other = []
 		other.append(np.array([[
-			[0, 1234],	# this will be suppressed
+			[0, 1234],  # this will be suppressed
 			[0, 5678],
 		]], dtype=tf.keras.backend.floatx()))
 		other.append(np.array([[
