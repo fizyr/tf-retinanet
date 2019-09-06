@@ -122,9 +122,9 @@ def run(generator, args, config):
 		annotations = generator.load_annotations(i)
 		if len(annotations['labels']) > 0 :
 			# Apply random transformations.
-			if config['generator']['details']['transform_generator'] is 'random':
+			if config['generator']['details']['transform_generator'] == 'random':
 				image, annotations = generator.random_transform_group_entry(image, annotations)
-			if config['generator']['details']['visual_effect_generator'] is 'random':
+			if config['generator']['details']['visual_effect_generator'] == 'random':
 				image, annotations = generator.random_visual_effect_group_entry(image, annotations)
 
 			# Resize the image and annotations.

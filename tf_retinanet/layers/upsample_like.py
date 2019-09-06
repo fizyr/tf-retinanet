@@ -1,3 +1,19 @@
+"""
+Copyright 2017-2019 Fizyr (https://fizyr.com)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 import tensorflow as tf
 
 
@@ -10,11 +26,11 @@ class UpsampleLike(tf.keras.layers.Layer):
 		target_shape = tf.keras.backend.shape(target)
 		if tf.keras.backend.image_data_format() == 'channels_first':
 			source = tf.transpose(source, (0, 2, 3, 1))
-			output = tf.compat.v1.image.resize(source, (target_shape[2], target_shape[3]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+			output = tf.image.resize(source, (target_shape[2], target_shape[3]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 			output = tf.transpose(output, (0, 3, 1, 2))
 			return output
 		else:
-			return tf.compat.v1.image.resize(source, (target_shape[1], target_shape[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+			return tf.image.resize(source, (target_shape[1], target_shape[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
 	def compute_output_shape(self, input_shape):
 		if tf.keras.backend.image_data_format() == 'channels_first':
