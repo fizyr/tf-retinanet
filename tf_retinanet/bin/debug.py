@@ -91,6 +91,10 @@ def parse_args(args):
 
 
 def set_args(config, args):
+	# Additional config; start from this so it can be overwirtten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
 	if args.backbone:
 		config['backbone']['name'] = args.backbone
 	if args.generator:
@@ -105,10 +109,6 @@ def set_args(config, args):
 		config['generator']['details']['image_min_side'] = args.image_min_side
 	if args.image_max_side:
 		config['generator']['details']['image_max_side'] = args.image_max_side
-
-	# Additional config.
-	if args.o:
-		config = parse_additional_options(config, args.o)
 
 	return config
 

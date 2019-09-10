@@ -157,6 +157,10 @@ def parse_args(args):
 
 
 def set_args(config, args):
+	# Additional config; start from this so it can be overwirtten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
 	if args.backbone:
 		config['backbone']['name'] = args.backbone
 	if args.generator:
@@ -201,10 +205,6 @@ def set_args(config, args):
 		config['train']['max_queue_size'] = args.max_queue_size
 	if args.weights:
 		config['train']['weights'] = args.weights
-
-	# Additional config.
-	if args.o:
-		config = parse_additional_options(config, args.o)
 
 	return config
 

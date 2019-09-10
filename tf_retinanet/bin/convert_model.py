@@ -78,6 +78,10 @@ def parse_args(args):
 
 
 def set_args(config, args):
+	# Additional config; start from this so it can be overwirtten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
 	if args.backbone:
 		config['backbone']['name'] = args.backbone
 
@@ -85,9 +89,6 @@ def set_args(config, args):
 	config['convert']['nms'] = args.nms
 	config['convert']['class_specific_filter'] = args.class_specific_filter
 
-	# Additional config.
-	if args.o:
-		config = parse_additional_options(config, args.o)
 
 	return config
 

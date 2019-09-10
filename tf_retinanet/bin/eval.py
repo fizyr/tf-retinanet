@@ -97,6 +97,10 @@ def parse_args(args):
 
 
 def set_args(config, args):
+	# Additional config; start from this so it can be overwirtten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
 	if args.backbone:
 		config['backbone']['name'] = args.backbone
 	if args.generator:
@@ -121,10 +125,6 @@ def set_args(config, args):
 		config['evaluate']['max_detections'] = args.max_detections
 	if args.weights:
 		config['evaluate']['weights'] = args.weights
-
-	# Additional config.
-	if args.o:
-		config = parse_additional_options(config, args.o)
 
 	return config
 
