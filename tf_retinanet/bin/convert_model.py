@@ -32,7 +32,7 @@ from ..              import models
 from ..backbones     import get_backbone
 from ..utils.anchors import parse_anchor_parameters
 from ..utils.gpu     import setup_gpu
-from ..utils.yaml    import parse_yaml
+from ..utils.config  import parse_yaml, parse_additional_options
 
 
 def set_defaults(config):
@@ -71,6 +71,9 @@ def parse_args(args):
 	parser.add_argument('--no-nms',                   help='Disables non maximum suppression.', dest='nms', action='store_false')
 	parser.add_argument('--no-class-specific-filter', help='Disables class specific filtering.', dest='class_specific_filter', action='store_false')
 
+	# Additional config.
+	parser.add_argument('--o', help='Additional config, in shape of a dictionary.', type=str, default=None)
+
 	return parser.parse_args(args)
 
 
@@ -81,6 +84,10 @@ def set_args(config, args):
 	# Convert config.
 	config['convert']['nms'] = args.nms
 	config['convert']['class_specific_filter'] = args.class_specific_filter
+
+	# Additional config.
+	if args.o:
+		config = parse_additional_options(config, args.o)
 
 	return config
 

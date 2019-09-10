@@ -34,3 +34,27 @@ def dump_yaml(config):
 		'config.yaml'
 	), 'w') as dump_config:
 		yaml.dump(config, dump_config, default_flow_style=False)
+
+
+def merge_dicts(a, b, path=None):
+	"merges b into a"
+	if path is None: path = []
+	for key in b:
+		if key in a:
+			if isinstance(a[key], dict) and isinstance(b[key], dict):
+				merge_dicts(a[key], b[key], path + [str(key)])
+			elif a[key] == b[key]:
+				pass  # Same leaf value.
+			else:
+				raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+		else:
+			a[key] = b[key]
+	return a
+
+
+def parse_additional_options(config, options):
+	import ast
+	additional_options = ast.literal_eval(options)
+	if not isinstance(additional_options, dict):
+		raise ValueError('Additional options not in valid format, they should be a dict.')
+	return merge_dicts(config, additional_options)

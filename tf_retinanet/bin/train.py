@@ -29,13 +29,13 @@ if __name__ == "__main__" and __package__ is None:
 	import tf_retinanet.bin  # noqa: F401
 	__package__ = "tf_retinanet.bin"
 
-from ..           import losses
-from ..           import models
-from ..backbones  import get_backbone
-from ..callbacks  import RedirectModel
-from ..generators import get_generators
-from ..utils.gpu  import setup_gpu
-from ..utils.yaml import dump_yaml, parse_yaml
+from ..             import losses
+from ..             import models
+from ..backbones    import get_backbone
+from ..callbacks    import RedirectModel
+from ..generators   import get_generators
+from ..utils.gpu    import setup_gpu
+from ..utils.config import dump_yaml, parse_yaml, parse_additional_options
 
 
 def set_defaults(config):
@@ -150,6 +150,9 @@ def parse_args(args):
 	parser.add_argument('--max-queue-size',   help='Queue length for multiprocessing workers in fit_generator.',          type=int)
 	parser.add_argument('--weights',          help='Initialize the model with weights from a file.',                      type=str)
 
+	# Additional config.
+	parser.add_argument('--o', help='Additional config, in shape of a dictionary.', type=str, default=None)
+
 	return parser.parse_args(args)
 
 
@@ -198,6 +201,10 @@ def set_args(config, args):
 		config['train']['max_queue_size'] = args.max_queue_size
 	if args.weights:
 		config['train']['weights'] = args.weights
+
+	# Additional config.
+	if args.o:
+		config = parse_additional_options(config, args.o)
 
 	return config
 
