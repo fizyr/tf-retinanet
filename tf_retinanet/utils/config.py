@@ -16,6 +16,8 @@ limitations under the License.
 
 import yaml
 import os
+import operator
+from functools import reduce
 
 
 def parse_yaml(path):
@@ -36,25 +38,19 @@ def dump_yaml(config):
 		yaml.dump(config, dump_config, default_flow_style=False)
 
 
-def merge_dicts(a, b, path=None):
-	"merges b into a"
-	if path is None: path = []
-	for key in b:
-		if key in a:
-			if isinstance(a[key], dict) and isinstance(b[key], dict):
-				merge_dicts(a[key], b[key], path + [str(key)])
-			elif a[key] == b[key]:
-				pass  # Same leaf value.
-			else:
-				raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
-		else:
-			a[key] = b[key]
-	return a
+def getFromDict(dataDict, mapList):
+	return reduce(operator.getitem, mapList, dataDict)
+
+
+def setInDict(dataDict, mapList, value):
+	getFromDict(dataDict, mapList[:-1])[mapList[-1]] = value
 
 
 def parse_additional_options(config, options):
-	import ast
-	additional_options = ast.literal_eval(options)
-	if not isinstance(additional_options, dict):
-		raise ValueError('Additional options not in valid format, they should be a dict.')
-	return merge_dicts(config, additional_options)
+	for option in options:
+		split = option[0].split('=')
+		value = split[1]
+		keys  = split[0].split('.')
+		temp_config = config
+		setInDict(config, keys, value)
+	return config
