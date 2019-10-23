@@ -1,5 +1,5 @@
 backbone:
-  name: resnet
+  name: legacy-resnet
   details:
     type: resnet50
     weights: imagenet

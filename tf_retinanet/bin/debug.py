@@ -30,10 +30,10 @@ if __name__ == "__main__" and __package__ is None:
 
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
 from ..utils.visualization import draw_annotations, draw_boxes, draw_caption
-from ..utils.anchors import anchors_for_shape, compute_gt_annotations
-from ..generators import get_generators
-from ..backbones import get_backbone
-from ..utils.yaml import parse_yaml
+from ..utils.anchors       import anchors_for_shape, compute_gt_annotations
+from ..generators          import get_generators
+from ..backbones           import get_backbone
+from ..utils.config        import parse_yaml, parse_additional_options
 
 
 def set_defaults(config):
@@ -84,10 +84,17 @@ def parse_args(args):
 	parser.add_argument('--display-name', help='Display image name on the bottom left corner.', action='store_true')
 	parser.add_argument('--annotations',  help='Show annotations on the image. Green annotations have anchors, red annotations don\'t and therefore don\'t contribute to training.', action='store_true')
 
+	# Additional config.
+	parser.add_argument('-o', help='Additional config.',action='append', nargs=1)
+
 	return parser.parse_args(args)
 
 
 def set_args(config, args):
+	# Additional config; start from this so it can be overwritten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
 	if args.backbone:
 		config['backbone']['name'] = args.backbone
 	if args.generator:

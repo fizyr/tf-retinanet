@@ -32,7 +32,7 @@ from ..              import models
 from ..backbones     import get_backbone
 from ..utils.anchors import parse_anchor_parameters
 from ..utils.gpu     import setup_gpu
-from ..utils.yaml    import parse_yaml
+from ..utils.config  import parse_yaml, parse_additional_options
 
 
 def set_defaults(config):
@@ -68,19 +68,28 @@ def parse_args(args):
 	parser.add_argument('model_out',                  help='Path to save the converted model to.')
 	parser.add_argument('--config',                   help='Config file.', default=None, type=str)
 	parser.add_argument('--backbone',                 help='The backbone of the model to convert.')
-	parser.add_argument('--no-nms',                   help='Disables non maximum suppression.', dest='nms', action='store_false')
+	parser.add_argument('--no-nms',                   help='Disables non maximum suppression.',  dest='nms',                   action='store_false')
 	parser.add_argument('--no-class-specific-filter', help='Disables class specific filtering.', dest='class_specific_filter', action='store_false')
+	parser.add_argument('--savedmodel',               help='Convert to tensorflow SavedModel.',  dest='savedmodel',
+
+	# Additional config.
+	parser.add_argument('-o', help='Additional config.',action='append', nargs=1)
 
 	return parser.parse_args(args)
 
 
 def set_args(config, args):
+	# Additional config; start from this so it can be overwritten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
 	if args.backbone:
 		config['backbone']['name'] = args.backbone
 
 	# Convert config.
 	config['convert']['nms'] = args.nms
 	config['convert']['class_specific_filter'] = args.class_specific_filter
+
 
 	return config
 
@@ -127,8 +136,12 @@ def main(args=None, config=None):
 	)
 
 	# Save model.
-	model.save(args.model_out)
-
+	if not args.savedmodel:
+		model.save(args.model_out)
+	elif args.savedmodel:
+		print('Converting to savedmodel.')
+		import tensorflow as tf
+		tf.saved_model.save(model, args.model_out)
 
 if __name__ == '__main__':
 	main()

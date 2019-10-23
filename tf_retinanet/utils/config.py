@@ -16,6 +16,8 @@ limitations under the License.
 
 import yaml
 import os
+import operator
+from functools import reduce
 
 
 def parse_yaml(path):
@@ -34,3 +36,21 @@ def dump_yaml(config):
 		'config.yaml'
 	), 'w') as dump_config:
 		yaml.dump(config, dump_config, default_flow_style=False)
+
+
+def get_drom_dict(datadict, maplist):
+	return reduce(operator.getitem, maplist, datadict)
+
+
+def set_in_dict(datadict, maplist, value):
+	get_drom_dict(datadict, maplist[:-1])[maplist[-1]] = value
+
+
+def parse_additional_options(config, options):
+	for option in options:
+		split = option[0].split('=')
+		value = split[1]
+		keys  = split[0].split('.')
+		temp_config = config
+		set_in_dict(config, keys, value)
+	return config
