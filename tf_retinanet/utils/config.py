@@ -38,12 +38,12 @@ def dump_yaml(config):
 		yaml.dump(config, dump_config, default_flow_style=False)
 
 
-def getFromDict(dataDict, mapList):
-	return reduce(operator.getitem, mapList, dataDict)
+def get_drom_dict(datadict, maplist):
+	return reduce(operator.getitem, maplist, datadict)
 
 
-def setInDict(dataDict, mapList, value):
-	getFromDict(dataDict, mapList[:-1])[mapList[-1]] = value
+def set_in_dict(datadict, maplist, value):
+	get_drom_dict(datadict, maplist[:-1])[maplist[-1]] = value
 
 
 def parse_additional_options(config, options):
@@ -52,5 +52,5 @@ def parse_additional_options(config, options):
 		value = split[1]
 		keys  = split[0].split('.')
 		temp_config = config
-		setInDict(config, keys, value)
+		set_in_dict(config, keys, value)
 	return config

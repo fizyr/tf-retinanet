@@ -157,7 +157,7 @@ def parse_args(args):
 
 
 def set_args(config, args):
-	# Additional config; start from this so it can be overwirtten by the other command line options.
+	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
 		config = parse_additional_options(config, args.o)
 

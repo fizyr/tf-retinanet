@@ -111,8 +111,6 @@ If you have a project based on `tf-retinanet` or `keras-retinanet` and would lik
 
 ### Notes
 * This repository requires Tensorflow 1.14 or higher.
-* This repository is [tested](https://github.com/fizyr/tf-retinanet/blob/master/.travis.yml) using OpenCV 3.4.
-* This repository is [tested](https://github.com/fizyr/tf-retinanet/blob/master/.travis.yml) using Python 3.6.
 
 Contributions to this project are welcome.
 

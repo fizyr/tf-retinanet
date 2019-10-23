@@ -85,13 +85,13 @@ def parse_args(args):
 	parser.add_argument('--annotations',  help='Show annotations on the image. Green annotations have anchors, red annotations don\'t and therefore don\'t contribute to training.', action='store_true')
 
 	# Additional config.
-	parser.add_argument('--o', help='Additional config, in shape of a dictionary.', type=str, default=None)
+	parser.add_argument('-o', help='Additional config.',action='append', nargs=1)
 
 	return parser.parse_args(args)
 
 
 def set_args(config, args):
-	# Additional config; start from this so it can be overwirtten by the other command line options.
+	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
 		config = parse_additional_options(config, args.o)
 
