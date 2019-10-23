@@ -68,8 +68,10 @@ def parse_args(args):
 	parser.add_argument('model_out',                  help='Path to save the converted model to.')
 	parser.add_argument('--config',                   help='Config file.', default=None, type=str)
 	parser.add_argument('--backbone',                 help='The backbone of the model to convert.')
-	parser.add_argument('--no-nms',                   help='Disables non maximum suppression.', dest='nms', action='store_false')
+	parser.add_argument('--no-nms',                   help='Disables non maximum suppression.',  dest='nms',                   action='store_false')
 	parser.add_argument('--no-class-specific-filter', help='Disables class specific filtering.', dest='class_specific_filter', action='store_false')
+	parser.add_argument('--lite',                     help='Convert to tensorflow lite.',        dest='lite',                  action='store_true')
+	parser.add_argument('--savedmodel',               help='Convert to tensorflow SavedModel.',  dest='savedmodel',            action='store_true')
 
 	# Additional config.
 	parser.add_argument('--o', help='Additional config, in shape of a dictionary.', type=str, default=None)
@@ -135,7 +137,27 @@ def main(args=None, config=None):
 	)
 
 	# Save model.
-	model.save(args.model_out)
+	if (not args.lite) and (not args.savedmodel):
+		model.save(args.model_out)
+	elif args.lite:
+		print('Converting to tensorflow lite.')
+		import tensorflow as tf
+		model.layers.pop(0)
+
+		fixed_size_inputs = tf.keras.layers.Input(shape=(1333, 800, 3))
+		outputs = model(fixed_size_inputs)
+		fixed_size_model = tf.keras.Model(fixed_size_inputs, outputs)
+
+		converter = tf.lite.TFLiteConverter.from_keras_model(fixed_size_model)
+		target_spec = tf.lite.TargetSpec(supported_ops = set([tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]))
+		converter.target_spec = target_spec
+		tflite_model = converter.convert()
+	elif args.savedmodel:
+		print('Converting to savedmodel.')
+		import tensorflow as tf
+		tf.saved_model.save(model, args.model_out)
+
+
 
 
 if __name__ == '__main__':
