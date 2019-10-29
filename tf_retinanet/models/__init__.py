@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from . import retinanet  # noqa: F401
+from . import submodels  # noqa: F401
 
 
 def load_model(filepath, backbone):

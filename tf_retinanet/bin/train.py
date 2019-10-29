@@ -51,6 +51,14 @@ def set_defaults(config):
 	if 'details' not in config['generator']:
 		config['generator']['details'] = {}
 
+	# Set defaults for submodels.
+	if 'submodels' not in config:
+		config['submodels'] = {}
+	if 'names' not in config['submodels']:
+		config['submodels']['names'] = ['default_regression', 'default_classification']
+	if 'details' not in config['submodels']:
+		config['submodels']['details'] = {}
+
 	# Set defaults for callbacks config.
 	if 'callbacks' not in config:
 		config['callbacks'] = {}
@@ -230,12 +238,16 @@ def main(args=None):
 	# Set gpu configuration.
 	setup_gpu(config['train']['gpu'])
 
+	# Get the submodels.
+	submodels = models.submodels.get_submodels(config)
+
 	# Get the backbone.
 	backbone = get_backbone(config)
 
-	# Get the generators.
-	generators = get_generators(
+	# Get the generators and the submodels updated with info of the generators.
+	generators, submodels = get_generators(
 		config,
+		submodels,
 		preprocess_image=backbone.preprocess_image
 	)
 
@@ -250,7 +262,7 @@ def main(args=None):
 		evaluation_callback = generators['custom_evaluation_callback']
 
 	# Create the model.
-	model = backbone.retinanet(train_generator.num_classes())
+	model = backbone.retinanet(submodels=submodels)
 
 	# If needed load weights.
 	if config['train']['weights'] is not None and config['train']['weights'] != 'imagenet':
@@ -273,12 +285,13 @@ def main(args=None):
 	# Print model.
 	print(training_model.summary())
 
+	loss = {}
+	for submodel in submodels:
+		loss[submodel.get_name()] = submodel.loss()
+
 	# Compile model.
 	training_model.compile(
-		loss={
-			'regression'    : losses.smooth_l1(),
-			'classification': losses.focal()
-		},
+		loss=loss,
 		optimizer=tf.keras.optimizers.Adam(lr=float(config['train']['lr']))
 	)
 
