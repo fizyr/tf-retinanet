@@ -16,9 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import sys
-import os
 import argparse
+import os
+import sys
 
 import tensorflow as tf
 
@@ -49,6 +49,14 @@ def set_defaults(config):
 		config['generator'] = {}
 	if 'details' not in config['generator']:
 		config['generator']['details'] = {}
+
+	# Set defaults for submodels.
+	if 'submodels' not in config:
+		config['submodels'] = {}
+	if 'names' not in config['submodels']:
+		config['submodels']['names'] = ['default_regression', 'default_classification']
+	if 'details' not in config['submodels']:
+		config['submodels']['details'] = {}
 
 	# Set defaults for evaluate config.
 	if 'evaluate' not in config:
@@ -150,13 +158,17 @@ def main(args=None):
 	# Set gpu configuration.
 	setup_gpu(config['evaluate']['gpu'])
 
+	# Get the submodels.
+	submodels = models.submodels.get_submodels(config)
+
 	# Get the backbone.
 	backbone = get_backbone(config)
 
 	# Get the generators.
-	generators = get_generators(
+	generators, submodels = get_generators(
 		config,
-		preprocess_image=backbone.preprocess_image
+		preprocess_image=backbone.preprocess_image,
+		submodels=submodels
 	)
 
 	if 'test' not in generators:
@@ -168,7 +180,7 @@ def main(args=None):
 	# Load model.
 	if config['evaluate']['weights'] is None:
 		raise 'Could not get weights.'
-	model = models.load_model(config['evaluate']['weights'], backbone=backbone)
+	model = models.load_model(config['evaluate']['weights'], backbone=backbone, submodels=submodels)
 
 	# Create prediction model.
 	if config['evaluate']['convert_model']:

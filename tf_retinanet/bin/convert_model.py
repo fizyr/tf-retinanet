@@ -48,6 +48,14 @@ def set_defaults(config):
 	if 'details' not in config['generator']:
 		config['generator']['details'] = {}
 
+	# Set defaults for submodels.
+	if 'submodels' not in config:
+		config['submodels'] = {}
+	if 'names' not in config['submodels']:
+		config['submodels']['names'] = ['default_regression', 'default_classification']
+	if 'details' not in config['submodels']:
+		config['submodels']['details'] = {}
+
 	# Set the defaults for convert.
 	if 'convert' not in config:
 		config['convert'] = {}
@@ -70,7 +78,7 @@ def parse_args(args):
 	parser.add_argument('--backbone',                 help='The backbone of the model to convert.')
 	parser.add_argument('--no-nms',                   help='Disables non maximum suppression.',  dest='nms',                   action='store_false')
 	parser.add_argument('--no-class-specific-filter', help='Disables class specific filtering.', dest='class_specific_filter', action='store_false')
-	parser.add_argument('--savedmodel',               help='Convert to tensorflow SavedModel.',  dest='savedmodel',
+	parser.add_argument('--savedmodel',               help='Convert to tensorflow SavedModel.',  dest='savedmodel',            action='store_true')
 
 	# Additional config.
 	parser.add_argument('-o', help='Additional config.',action='append', nargs=1)
@@ -118,11 +126,14 @@ def main(args=None, config=None):
 	if 'anchors' in config['generator']['details']:
 		anchor_params = parse_anchor_parameters(config['generator']['details']['anchors'])
 
+	# Get the submodels.
+	submodels = models.submodels.get_submodels(config)
+
 	# Get the backbone.
 	backbone = get_backbone(config)
 
 	# Load the model.
-	model = models.load_model(args.model_in, backbone=backbone)
+	model = models.load_model(args.model_in, backbone=backbone, submodels=submodels)
 
 	# Check if this is indeed a training model.
 	models.retinanet.check_training_model(model)

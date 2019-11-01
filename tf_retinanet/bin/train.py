@@ -17,8 +17,8 @@ limitations under the License.
 """
 
 import argparse
-import sys
 import os
+import sys
 
 import tensorflow as tf
 

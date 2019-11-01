@@ -72,6 +72,12 @@ class Submodel(object):
 		"""
 		raise NotImplementedError()
 
+	@staticmethod
+	def get_custom_objects():
+		""" Get the custom objects needed by the submodel.
+		"""
+		return {}
+
 
 def preprocess_config(config):
 	return config
