@@ -19,6 +19,7 @@ limitations under the License.
 import argparse
 import os
 import sys
+
 import cv2
 
 
@@ -29,6 +30,7 @@ if __name__ == "__main__" and __package__ is None:
 	__package__ = "tf_retinanet.bin"
 
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
+from ..                    import models
 from ..utils.visualization import draw_annotations, draw_boxes, draw_caption
 from ..utils.anchors       import anchors_for_shape, compute_gt_annotations
 from ..generators          import get_generators
@@ -48,6 +50,14 @@ def set_defaults(config):
 		config['generator'] = {}
 	if 'details' not in config['generator']:
 		config['generator']['details'] = {}
+
+	# Set defaults for submodels.
+	if 'submodels' not in config:
+		config['submodels'] = {}
+	if 'names' not in config['submodels']:
+		config['submodels']['names'] = ['default_regression', 'default_classification']
+	if 'details' not in config['submodels']:
+		config['submodels']['details'] = {}
 
 	# Set defaults for callbacks config.
 	if 'callbacks' not in config:
@@ -199,13 +209,17 @@ def main(args=None):
 		config = parse_yaml(args.config)
 	config = set_defaults(config)
 
+	# Get the submodels.
+	submodels = models.submodels.get_submodels(config)
+
 	# Get the backbone.
 	backbone = get_backbone(config)
 
 	# Get the generators.
-	generators = get_generators(
+	generators, submodels = get_generators(
 		config,
-		preprocess_image=backbone.preprocess_image
+		preprocess_image=backbone.preprocess_image,
+		submodels = submodels
 	)
 
 	# Retrieve a single generator.

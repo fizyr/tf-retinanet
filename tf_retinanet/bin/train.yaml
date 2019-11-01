@@ -11,6 +11,7 @@ generator:
     data_dir: /srv/datasets/COCO/
     train_set_name: train2017
     validation_set_name: val2017
+    test_set_name: val2017
     transform_generator: random
     visual_effect_generator: none
     batch_size: 2
