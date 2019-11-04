@@ -20,15 +20,19 @@ class SubmodelsManager(object):
 		self.classification = None
 		self.regression = None
 		self.submodels = {}
-		for submodel in config['submodels']:
+		for submodel in config['submodels']['retinanet']:
 			if submodel['type'] == 'default_regression':
-				from .regression import BboxRegressionSubmodel
-				submodel['class'] = BboxRegressionSubmodel
+				from .regression import BboxRegressionSubmodel, load_annotations, create_batch
+				submodel['class']        = BboxRegressionSubmodel
+				submodel['loader']       = load_annotations
+				submodel['create_batch'] = create_batch
 				self.regression = submodel
 				continue
 			elif submodel['type'] == 'default_classification':
-				from .classification import ClassificationSubmodel
-				submodel['class'] = ClassificationSubmodel
+				from .classification import ClassificationSubmodel, load_annotations, create_batch
+				submodel['class']        = ClassificationSubmodel
+				submodel['loader']       = load_annotations
+				submodel['create_batch'] = create_batch
 				self.classification = submodel
 				continue
 			else:
@@ -49,10 +53,15 @@ class SubmodelsManager(object):
 		if not self.regression:
 			raise("Could not find main regression submodel.")
 
+		if 'details' in self.classification and 'classes' in self.classification['details']:
+			self.classes = self.classification['details']['classes']
+		else:
+			self.classes = None
+
 
 	def num_classes(self):
-		if 'details' in self.classification and 'classes' in self.classification['details']:
-			return len(self.classification['details']['classes'])
+		if self.classes:
+			return len(self.classes)
 		return None
 
 
@@ -66,8 +75,10 @@ class SubmodelsManager(object):
 			num_classes = self.num_classes()
 
 		submodels = []
-		submodels.append(self.regression['class']())
-		submodels.append(self.classification['class'](num_classes=num_classes))
+		self.regression['class'] = self.regression['class']()
+		submodels.append(self.regression['class'])
+		self.classification['class'] = self.classification['class'](num_classes=num_classes)
+		submodels.append(self.classification['class'])
 
 		for submodel in self.submodels:
 			submodels.append(submodel['class']())

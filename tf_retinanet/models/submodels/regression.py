@@ -1,6 +1,8 @@
 from . import Submodel
 from ...losses import smooth_l1
+from ...utils.anchors import bbox_transform
 import tensorflow as tf
+import numpy as np
 
 
 def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name='regression_submodel'):
@@ -44,6 +46,40 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 	outputs = tf.keras.layers.Reshape((-1, num_values), name='pyramid_regression_reshape')(outputs)
 
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
+
+
+def load_annotations(annotations, meta, annotation_source='bbox'):
+	annotations['bboxes'] = np.empty((len(meta['annotations']['objects']), 4))
+
+	for object_index, o in enumerate(meta['annotations']['objects']):
+		for element in o:
+			# is this our source?
+			if element['name'] != annotation_source:
+				continue
+
+			annotations['bboxes'][object_index, :] = element['data']
+
+	return annotations
+
+
+def create_batch(size, anchors, annotations, positive_indices, ignore_indices, overlap_indices):
+	""" Construct a training batch containing the regression information.
+	"""
+	batch = np.zeros((len(positive_indices), anchors.shape[0], size + 1), dtype=tf.keras.backend.floatx())
+
+	for index, (positive, ignore, overlap) in enumerate(zip(positive_indices, ignore_indices, overlap_indices)):
+		if annotations[index]['bboxes'].shape[0] == 0:
+			continue
+
+		batch[index, ignore, -1]   = -1
+		batch[index, positive, -1] = 1
+
+		print(batch[index, :, :-1].shape)
+		print('bboxes: ', annotations[index]['bboxes'])
+
+		batch[index, :, :-1] = bbox_transform(anchors, annotations[index]['bboxes'][overlap, :])
+
+	return batch
 
 
 class BboxRegressionSubmodel(Submodel):
