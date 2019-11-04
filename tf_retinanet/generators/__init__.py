@@ -111,7 +111,7 @@ def preprocess_config(config):
 	return config
 
 
-def get_generators(config, submodels, preprocess_image, **kwargs):
+def get_generators(config, submodels_manager, preprocess_image, **kwargs):
 	try:
 		generator_name = config['generator']['name']
 		generator_pkg = __import__('tf_retinanet_generators', fromlist=[generator_name])
@@ -121,7 +121,7 @@ def get_generators(config, submodels, preprocess_image, **kwargs):
 
 	return generator_pkg.from_config(
 		preprocess_config(config['generator']['details']),
-		submodels,
+		submodels_manager,
 		preprocess_image,
 		**kwargs
 	)

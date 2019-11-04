@@ -11,6 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .manager import SubmodelsManager
+
 class Submodel(object):
 	""" Abstract class for all submodels.
 	"""
@@ -85,7 +87,7 @@ def preprocess_config(config):
 
 def get_submodels(config, **kwargs):
 	submodels = []
-	submodels_names = config['submodels']['names']
+	submodels_names = [submodel['type'] for submodel in config['submodels']]
 	if 'default_regression' in submodels_names:
 		submodels_names.remove('default_regression')
 		from .regression import BboxRegressionSubmodel

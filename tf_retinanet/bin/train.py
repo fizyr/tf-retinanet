@@ -53,11 +53,10 @@ def set_defaults(config):
 
 	# Set defaults for submodels.
 	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'names' not in config['submodels']:
-		config['submodels']['names'] = ['default_regression', 'default_classification']
-	if 'details' not in config['submodels']:
-		config['submodels']['details'] = {}
+		config['submodels'] = []
+	if not config['submodels']:
+		config['submodels'].append({'type': 'default_regression',     'name': 'bbox_regression'})
+		config['submodels'].append({'type': 'default_classification', 'name': 'classification'})
 
 	# Set defaults for callbacks config.
 	if 'callbacks' not in config:
@@ -239,7 +238,7 @@ def main(args=None):
 	setup_gpu(config['train']['gpu'])
 
 	# Get the submodels.
-	submodels = models.submodels.get_submodels(config)
+	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.
 	backbone = get_backbone(config)
@@ -247,7 +246,7 @@ def main(args=None):
 	# Get the generators and the submodels updated with info of the generators.
 	generators, submodels = get_generators(
 		config,
-		submodels,
+		submodels_manager,
 		preprocess_image=backbone.preprocess_image
 	)
 
