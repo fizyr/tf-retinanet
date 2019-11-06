@@ -53,10 +53,12 @@ def set_defaults(config):
 
 	# Set defaults for submodels.
 	if 'submodels' not in config:
-		config['submodels'] = []
-	if not config['submodels']:
-		config['submodels'].append({'type': 'default_regression',     'name': 'bbox_regression'})
-		config['submodels'].append({'type': 'default_classification', 'name': 'classification'})
+		config['submodels'] = {}
+	if 'retinanet' not in config['submodels']:
+		config['submodels']['retinanet'] = []
+	if not config['submodels']['retinanet']:
+		config['submodels']['retinanet'].append({'type': 'default_regression',     'name': 'bbox_regression'})
+		config['submodels']['retinanet'].append({'type': 'default_classification', 'name': 'classification'})
 
 	# Set defaults for callbacks config.
 	if 'callbacks' not in config:

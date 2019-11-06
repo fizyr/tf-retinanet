@@ -16,12 +16,9 @@ from .manager import SubmodelsManager
 class Submodel(object):
 	""" Abstract class for all submodels.
 	"""
-	def __init__(self, annotation_source=None):
+	def __init__(self):
 		""" Constructor for submodel.
-		Args
-			annotation_source: Defines where in the annotations to get the data from.
 		"""
-		self.annotation_source = annotation_source
 		super(Submodel, self).__init__()
 
 

@@ -8,13 +8,13 @@ backbone:
 generator:
   name: coco
   details:
-    data_dir: /srv/datasets/COCO/
+    data_dir: /srv/datasets/COCO
     train_set_name: train2017
-    validation_set_name: val2017
-    test_set_name: val2017
-    transform_generator: random
+    validation_set_name: none
+    test_set_name: none
+    transform_generator: none
     visual_effect_generator: none
-    batch_size: 2
+    batch_size: 1
     anchors:
       sizes:
         - 32
@@ -42,10 +42,10 @@ callbacks:
   project_name:
 
 train:
-  steps_per_epoch: 10000
-  epochs: 100
+  steps_per_epoch: 100
+  epochs: 1
   use_multiprocessing: false
   workers: 1
-  max_queue_size: 10
-  gpu: 1
+  max_queue_size: 1
+  gpu: 0
   lr: 1e-5

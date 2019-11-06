@@ -12,16 +12,24 @@ limitations under the License.
 """
 
 class SubmodelsManager(object):
-	""" bla
+	""" Class that parses submodels from configuration and creates them.
 	"""
 	def __init__(self, config):
-		""" grfgr
+		""" Initialize the manager.
+		Args:
+			config: configuration dictionary.
 		"""
-		self.classification = None
-		self.regression     = None
-		self.submodels      = {}
+		self.classification       = None
+		self.regression           = None
+		self.additional_submodels = []
 
+
+		# Loop through the specified submodels.
 		for submodel in config['submodels']['retinanet']:
+			if 'details' not in submodel:
+				submodel['details'] = {}
+
+			# Parse the default submodels.
 			if submodel['type'] == 'default_regression':
 				from .regression import BboxRegressionSubmodel
 				submodel['class'] = BboxRegressionSubmodel
@@ -33,50 +41,63 @@ class SubmodelsManager(object):
 				self.classification = submodel
 				continue
 			else:
+				# Search the indicated submodels in external packages.
 				try:
 					submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel['type']])
 					submodel_pkg = getattr(submodel_pkg, submodel['type'])
 				except ImportError:
 					raise(submodel['type'] + 'is not a valid submodel')
-				submodel['class'] = submodel_pkg.from_config()
+				submodel['class'] = submodel_pkg.from_config(submodel['details'])
+				# If the submodel is indicated as main, set it in the local submodels.
 				if 'main_classification' in submodel and submodel['main_classification']:
 					self.classification = submodel
+					continue
 				if 'main_regression' in submodel and submodel['main_regression']:
 					self.regression = submodel
-				self.submodels[submodel['name']] = submodel #remove name from here
+					continue
+				self.additional_submodels.append(submodel)
 
+		# We need at least a main classification and a regression submodel to build RetinaNet.
 		if not self.classification:
 			raise("Could not find main classification submodel.")
 		if not self.regression:
 			raise("Could not find main regression submodel.")
 
-		if 'details' in self.classification and 'classes' in self.classification['details']:
+		# Parse the classes, if provided.
+		if 'classes' in self.classification['details']:
 			self.classes = self.classification['details']['classes']
 		else:
 			self.classes = None
 
-
 	def num_classes(self):
+		""" If classes are provided in the configuration file, return number of classes.
+		"""
 		if self.classes:
 			return len(self.classes)
-		return None
-
+		else:
+			return None
 
 	def create(self, num_classes=None):
-		if num_classes and self.num_classes():
-			raise("Number of classes provided twice and conflicting.")
-		elif not num_classes and not self.num_classes():
-			raise("Number of classes not provided.")
+		""" Create the submodels that were provided.
+		Args:
+			num_classes: number of classification classes.
+		"""
+		# If the number of classes is provided, add the information to the classification details.
+		if num_classes:
+			self.classification['details']['num_classes'] = num_classes
 
-		if num_classes is None:
-			num_classes = self.num_classes()
+		# Instantiate main regression and classification submodels.
+		self.regression     = self.regression['class'](self.regression['details'])
+		self.classification = self.classification['class'](self.classification['details'])
 
-		submodels = []
-		submodels.append(self.regression['class']())
-		submodels.append(self.classification['class'](num_classes=num_classes))
+		# Instantiate and append all provided submodels.
+		self.submodels = []
+		self.submodels.append(self.regression)
+		self.submodels.append(self.classification)
+		for submodel in self.additional_submodels:
+			self.submodels.append(submodel['class'](submodel['details']))
 
-		for submodel in self.submodels:
-			submodels.append(submodel['class']())
-
-		return submodels
-
+	def get_submodels(self):
+		""" Return the submodels.
+		"""
+		return self.submodels

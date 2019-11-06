@@ -49,19 +49,27 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 class BboxRegressionSubmodel(Submodel):
 	""" Simple bounding box regression submodel.
 	"""
-	def __init__(self, annotation_source=None, **kwargs):
+	def __init__(self, config, **kwargs):
 		""" Constructor for "simple" regression submodel.
 		Args
-			annotation_source: Defines where in the annotations to look for the values.
+			config: Defines the configuration for the submodel.
 		"""
+		if 'name' not in config:
+			config['name'] = 'bbox_regression'
+		self.name = config['name']
+
 		self.values = 4
 
-		super(BboxRegressionSubmodel, self).__init__(annotation_source)
+		super(BboxRegressionSubmodel, self).__init__()
 
 	def get_name(self):
-		return 'bbox-regression'
+		""" Return the name of the submodel.
+		"""
+		return self.name
 
 	def __repr__(self):
+		""" Return a description of the model.
+		"""
 		return 'BboxRegressionSubmodel({})'.format(str(self.values))
 
 	def size(self):
@@ -78,4 +86,3 @@ class BboxRegressionSubmodel(Submodel):
 		""" Define a loss function for the regression submodel.
 		"""
 		return smooth_l1()
-

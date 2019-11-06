@@ -25,8 +25,8 @@ from . import fpn
 def assert_training_model(model):
 	""" Assert that the model is a training model.
 	"""
-	assert(all(output in model.output_names for output in ['bbox-regression', 'classification'])), \
-		"Input is not a training model (no 'bbox-regression' and 'classification' outputs were found, outputs are: {}).".format(model.output_names)
+	assert(all(output in model.output_names for output in ['bbox_regression', 'classification'])), \
+		"Input is not a training model (no 'bbox_regression' and 'classification' outputs were found, outputs are: {}).".format(model.output_names)
 
 
 def check_training_model(model):
