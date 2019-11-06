@@ -62,34 +62,6 @@ def default_classification_model(
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
-def load_annotations(annotations, meta, class_mapping, annotation_source='label', name='labels'):
-	""" Load annotations from meta.
-	"""
-	annotations[name] = np.empty((len(meta['annotations']['objects'])))
-
-	for object_index, o in enumerate(meta['annotations']['objects']):
-		for element in o:
-			if element['name'] != annotation_source:
-				continue
-
-			annotations[name][object_index] = class_mapping[element['data']]
-
-	return annotations
-
-
-def create_batch(size, anchors, annotations, positive_indices, ignore_indices, overlap_indices):
-	""" Construct a training batch containing the classification information.
-	"""
-	batch = np.zeros((len(positive_indices), anchors.shape[0], size + 1), dtype=tf.keras.backend.floatx())
-
-	for index, (positive, ignore, overlap) in enumerate(zip(positive_indices, ignore_indices, overlap_indices)):
-		batch[index, ignore, -1]   = -1
-		batch[index, positive, -1] = 1
-		batch[index, positive, annotations[index]['labels'][overlap[positive]].astype(int)] = 1
-
-	return batch
-
-
 class ClassificationSubmodel(Submodel):
 	""" simple classification submodel, performing multi-class prediction.
 	Args

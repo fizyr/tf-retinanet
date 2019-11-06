@@ -80,30 +80,3 @@ class Submodel(object):
 		"""
 		return {}
 
-
-def preprocess_config(config):
-	return config
-
-
-def get_submodels(config, **kwargs):
-	submodels = []
-	submodels_names = [submodel['type'] for submodel in config['submodels']]
-	if 'default_regression' in submodels_names:
-		submodels_names.remove('default_regression')
-		from .regression import BboxRegressionSubmodel
-		submodels.append(BboxRegressionSubmodel)
-	if 'default_classification' in submodels_names:
-		submodels_names.remove('default_classification')
-		from .classification import ClassificationSubmodel
-		submodels.append(ClassificationSubmodel)
-	for submodel_name in submodels_names:
-		try:
-			submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel_name])
-			submodel_pkg = getattr(submodel_pkg, submodel_name)
-		except ImportError:
-			raise(submodel_name + 'is not a valid submodel')
-		submodels.append(submodel_pkg.from_config(
-			preprocess_config(config['submodels']['details']),
-			**kwargs
-		))
-	return submodels

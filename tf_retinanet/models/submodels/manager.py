@@ -18,21 +18,18 @@ class SubmodelsManager(object):
 		""" grfgr
 		"""
 		self.classification = None
-		self.regression = None
-		self.submodels = {}
+		self.regression     = None
+		self.submodels      = {}
+
 		for submodel in config['submodels']['retinanet']:
 			if submodel['type'] == 'default_regression':
-				from .regression import BboxRegressionSubmodel, load_annotations, create_batch
-				submodel['class']        = BboxRegressionSubmodel
-				submodel['loader']       = load_annotations
-				submodel['create_batch'] = create_batch
+				from .regression import BboxRegressionSubmodel
+				submodel['class'] = BboxRegressionSubmodel
 				self.regression = submodel
 				continue
 			elif submodel['type'] == 'default_classification':
-				from .classification import ClassificationSubmodel, load_annotations, create_batch
-				submodel['class']        = ClassificationSubmodel
-				submodel['loader']       = load_annotations
-				submodel['create_batch'] = create_batch
+				from .classification import ClassificationSubmodel
+				submodel['class'] = ClassificationSubmodel
 				self.classification = submodel
 				continue
 			else:
@@ -75,10 +72,8 @@ class SubmodelsManager(object):
 			num_classes = self.num_classes()
 
 		submodels = []
-		self.regression['class'] = self.regression['class']()
-		submodels.append(self.regression['class'])
-		self.classification['class'] = self.classification['class'](num_classes=num_classes)
-		submodels.append(self.classification['class'])
+		submodels.append(self.regression['class']())
+		submodels.append(self.classification['class'](num_classes=num_classes))
 
 		for submodel in self.submodels:
 			submodels.append(submodel['class']())
