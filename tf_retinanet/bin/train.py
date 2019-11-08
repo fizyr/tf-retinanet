@@ -239,7 +239,7 @@ def main(args=None):
 	# Set gpu configuration.
 	setup_gpu(config['train']['gpu'])
 
-	# Get the submodels.
+	# Get the submodels manager.
 	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.

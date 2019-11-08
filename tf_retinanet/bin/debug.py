@@ -209,8 +209,8 @@ def main(args=None):
 		config = parse_yaml(args.config)
 	config = set_defaults(config)
 
-	# Get the submodels.
-	submodels = models.submodels.get_submodels(config)
+	# Get the submodels manager.
+	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.
 	backbone = get_backbone(config)
@@ -218,8 +218,8 @@ def main(args=None):
 	# Get the generators.
 	generators, submodels = get_generators(
 		config,
-		preprocess_image=backbone.preprocess_image,
-		submodels = submodels
+		submodels_manager,
+		preprocess_image=backbone.preprocess_image
 	)
 
 	# Retrieve a single generator.

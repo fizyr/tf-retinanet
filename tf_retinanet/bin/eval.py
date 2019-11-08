@@ -158,8 +158,8 @@ def main(args=None):
 	# Set gpu configuration.
 	setup_gpu(config['evaluate']['gpu'])
 
-	# Get the submodels.
-	submodels = models.submodels.get_submodels(config)
+	# Get the submodels manager.
+	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.
 	backbone = get_backbone(config)
