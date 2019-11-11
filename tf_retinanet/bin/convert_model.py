@@ -30,6 +30,7 @@ if __name__ == "__main__" and __package__ is None:
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
 from ..              import models
 from ..backbones     import get_backbone
+from ..generators    import get_generators
 from ..utils.anchors import parse_anchor_parameters
 from ..utils.gpu     import setup_gpu
 from ..utils.config  import parse_yaml, parse_additional_options
@@ -51,10 +52,11 @@ def set_defaults(config):
 	# Set defaults for submodels.
 	if 'submodels' not in config:
 		config['submodels'] = {}
-	if 'names' not in config['submodels']:
-		config['submodels']['names'] = ['default_regression', 'default_classification']
-	if 'details' not in config['submodels']:
-		config['submodels']['details'] = {}
+	if 'retinanet' not in config['submodels']:
+		config['submodels']['retinanet'] = []
+	if not config['submodels']['retinanet']:
+		config['submodels']['retinanet'].append({'type': 'default_regression',     'name': 'bbox_regression'})
+		config['submodels']['retinanet'].append({'type': 'default_classification', 'name': 'classification'})
 
 	# Set the defaults for convert.
 	if 'convert' not in config:
@@ -126,11 +128,18 @@ def main(args=None, config=None):
 	if 'anchors' in config['generator']['details']:
 		anchor_params = parse_anchor_parameters(config['generator']['details']['anchors'])
 
-	# Get the submodels.
-	submodels = models.submodels.get_submodels(config)
+	# Get the submodels manager.
+	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.
 	backbone = get_backbone(config)
+
+	# Get the generators and the submodels updated with info of the generators.
+	generators, submodels = get_generators(
+		config,
+		submodels_manager,
+		preprocess_image=backbone.preprocess_image
+	)
 
 	# Load the model.
 	model = models.load_model(args.model_in, backbone=backbone, submodels=submodels)
