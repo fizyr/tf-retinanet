@@ -53,10 +53,11 @@ def set_defaults(config):
 	# Set defaults for submodels.
 	if 'submodels' not in config:
 		config['submodels'] = {}
-	if 'names' not in config['submodels']:
-		config['submodels']['names'] = ['default_regression', 'default_classification']
-	if 'details' not in config['submodels']:
-		config['submodels']['details'] = {}
+	if 'retinanet' not in config['submodels']:
+		config['submodels']['retinanet'] = []
+	if not config['submodels']['retinanet']:
+		config['submodels']['retinanet'].append({'type': 'default_regression',     'name': 'bbox_regression'})
+		config['submodels']['retinanet'].append({'type': 'default_classification', 'name': 'classification'})
 
 	# Set defaults for evaluate config.
 	if 'evaluate' not in config:
@@ -92,11 +93,11 @@ def parse_args(args):
 
 	# Evaluate config.
 	parser.add_argument('--convert-model',   help='Convert the model to an inference model (ie. the input is a training model).', action='store_true')
-	parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.',          type=int)
-	parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',             type=float)
-	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',           type=float)
-	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                                  type=int)
-	parser.add_argument('--weights',         help='Initialize the model with weights from a file.',                               type=str)
+	parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.', type=int)
+	parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',    default=0.05, type=float)
+	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',  default=0.5,  type=float)
+	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                         default=100,  type=int)
+	parser.add_argument('--save-path',       help='Path for saving images with detections (doesn\'t work for COCO).',                  type=str)
 
 	# Additional config.
 	parser.add_argument('-o', help='Additional config.',action='append', nargs=1)
@@ -131,8 +132,6 @@ def set_args(config, args):
 		config['evaluate']['iou_threshold'] = args.iou_threshold
 	if args.max_detections:
 		config['evaluate']['max_detections'] = args.max_detections
-	if args.weights:
-		config['evaluate']['weights'] = args.weights
 
 	return config
 
@@ -167,15 +166,19 @@ def main(args=None):
 	# Get the generators.
 	generators, submodels = get_generators(
 		config,
-		preprocess_image=backbone.preprocess_image,
-		submodels=submodels
+		submodels_manager,
+		preprocess_image=backbone.preprocess_image
 	)
 
 	if 'test' not in generators:
 		raise 'Could not get test generator.'
 	test_generator = generators['test']
+
+	evaluate = None
+	if 'custom_evaluation' not in generators:
+		raise('Evaluation not implement yet.')
 	if 'custom_evaluation' in generators:
-		evaluation = generators['custom_evaluation']
+		evaluate = generators['custom_evaluation']
 
 	# Load model.
 	if config['evaluate']['weights'] is None:
@@ -191,9 +194,35 @@ def main(args=None):
 
 		model = models.retinanet.convert_model(model, anchor_params=anchor_params)
 
-	if not evaluation:
-		raise('Standard evaluation not implement yet.')
-	evaluation = evaluation(test_generator, model)
+	if config['generator']['name'] == 'coco':
+		evaluation = evaluate(test_generator, model)
+
+	else:
+		average_precisions, inference_time = evaluate(
+			generators['test'],
+			model,
+			iou_threshold=args.iou_threshold,
+			score_threshold=args.score_threshold,
+			max_detections=args.max_detections,
+			save_path=args.save_path
+		)
+
+		# print evaluation
+		total_instances = []
+		precisions = []
+		for label, (average_precision, num_annotations) in average_precisions.items():
+			print('{:.0f} instances of class'.format(num_annotations),
+				  generators['test'].label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
+			total_instances.append(num_annotations)
+			precisions.append(average_precision)
+
+		if sum(total_instances) == 0:
+			print('No test instances found.')
+			return
+
+		print('Inference time for {:.0f} images: {:.4f}'.format(generators['test'].size(), inference_time))
+		print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
+		print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
 
 
 if __name__ == '__main__':
