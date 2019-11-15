@@ -48,6 +48,18 @@ class Submodel(object):
 		raise NotImplementedError()
 
 
+	def get_evaluation(self):
+		""" return the custom evaluation procedure.
+		"""
+		return None
+
+
+	def get_evaluation_callback(self):
+		""" return the custom evaluation callback.
+		"""
+		return None
+
+
 	def random_transform(self, image, annotations, transform, transform_parameters):
 		""" Transform the annotations based on a transformation matrix.
 		"""

@@ -23,7 +23,6 @@ class SubmodelsManager(object):
 		self.regression           = None
 		self.additional_submodels = []
 
-
 		# Loop through the specified submodels.
 		for submodel in config['submodels']['retinanet']:
 			if 'details' not in submodel:
@@ -69,6 +68,7 @@ class SubmodelsManager(object):
 		else:
 			self.classes = None
 
+
 	def num_classes(self):
 		""" If classes are provided in the configuration file, return number of classes.
 		"""
@@ -76,6 +76,7 @@ class SubmodelsManager(object):
 			return len(self.classes)
 		else:
 			return None
+
 
 	def create(self, num_classes=None):
 		""" Create the submodels that were provided.
@@ -97,7 +98,36 @@ class SubmodelsManager(object):
 		for submodel in self.additional_submodels:
 			self.submodels.append(submodel['class'](submodel['details']))
 
+
 	def get_submodels(self):
 		""" Return the submodels.
 		"""
 		return self.submodels
+
+
+	def get_evaluation(self):
+		""" Get evaluation procedure from submodels.
+		"""
+		evaluation = None
+		for submodel in self.submodels:
+			evaluation = submodel.get_evaluation()
+
+		if not evaluation:
+			from ...utils.eval import evaluate
+			evaluation = evaluate
+
+		return evaluation
+
+
+	def get_evaluation_callback(self):
+		""" Get evaluation callback from submodels.
+		"""
+		callback = None
+		for submodel in self.submodels:
+			callback = submodel.get_evaluation_callback()
+
+		if not callback:
+			from ...callbacks.eval import Evaluate
+			callback = Evaluate
+
+		return callback
