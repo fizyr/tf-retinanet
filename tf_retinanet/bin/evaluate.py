@@ -34,48 +34,7 @@ from ..backbones     import get_backbone
 from ..generators    import get_generators
 from ..utils.anchors import parse_anchor_parameters
 from ..utils.gpu     import setup_gpu
-from ..utils.config  import parse_yaml, parse_additional_options
-
-
-def set_defaults(config):
-	# Set defaults for backbone.
-	if 'backbone' not in config:
-		config['backbone'] = {}
-	if 'details' not in config['backbone']:
-		config['backbone']['details'] = {}
-
-	# Set defaults for generator.
-	if 'generator' not in config:
-		config['generator'] = {}
-	if 'details' not in config['generator']:
-		config['generator']['details'] = {}
-
-	# Set defaults for submodels.
-	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'retinanet' not in config['submodels']:
-		config['submodels']['retinanet'] = []
-	if not config['submodels']['retinanet']:
-		config['submodels']['retinanet'].append({'type': 'default_regression',     'name': 'bbox_regression'})
-		config['submodels']['retinanet'].append({'type': 'default_classification', 'name': 'classification'})
-
-	# Set defaults for evaluate config.
-	if 'evaluate' not in config:
-		config['evaluate'] = {}
-	if 'convert_model' not in config['evaluate']:
-		config['evaluate']['convert_model'] = False
-	if 'gpu' not in config['evaluate']:
-		config['evaluate']['gpu'] = 0
-	if 'score_threshold' not in config['evaluate']:
-		config['evaluate']['score_threshold'] = 0.05
-	if 'iou_threshold' not in config['evaluate']:
-		config['evaluate']['iou_threshold'] = 0.5
-	if 'max_detections' not in config['evaluate']:
-		config['evaluate']['max_detections'] = 100
-	if 'weights' not in config['evaluate']:
-		config['evaluate']['weights'] = None
-
-	return config
+from ..utils.config  import make_evaluation_config
 
 
 def parse_args(args):
@@ -105,51 +64,14 @@ def parse_args(args):
 	return parser.parse_args(args)
 
 
-def set_args(config, args):
-	# Additional config; start from this so it can be overwritten by the other command line options.
-	if args.o:
-		config = parse_additional_options(config, args.o)
-
-	if args.backbone:
-		config['backbone']['name'] = args.backbone
-	if args.generator:
-		config['generator']['name'] = args.generator
-
-	# Generator config.
-	if args.image_min_side:
-		config['generator']['details']['image_min_side'] = args.image_min_side
-	if args.image_max_side:
-		config['generator']['details']['image_max_side'] = args.image_max_side
-
-	# Evaluate config.
-	if args.convert_model:
-		config['evaluate']['convert_model'] = args.convert_model
-	if args.gpu:
-		config['evaluate']['gpu'] = args.gpu
-	if args.score_threshold:
-		config['evaluate']['score_threshold'] = args.score_threshold
-	if args.iou_threshold:
-		config['evaluate']['iou_threshold'] = args.iou_threshold
-	if args.max_detections:
-		config['evaluate']['max_detections'] = args.max_detections
-
-	return config
-
-
 def main(args=None):
 	# Parse command line arguments.
 	if args is None:
 		args = sys.argv[1:]
 	args = parse_args(args)
 
-	# Parse the configuration file.
-	config = {}
-	if args.config:
-		config = parse_yaml(args.config)
-	config = set_defaults(config)
-
-	# Apply the command line arguments to config.
-	config = set_args(config, args)
+	# Parse command line and configuration file settings.
+	config = make_evaluation_config(args)
 
 	# Disable eager, prevents memory leak and makes evaluating faster.
 	tf.compat.v1.disable_eager_execution()
@@ -196,7 +118,6 @@ def main(args=None):
 
 	if config['generator']['name'] == 'coco':
 		evaluation = evaluate(test_generator, model)
-
 	else:
 		average_precisions, inference_time = evaluate(
 			generators['test'],
