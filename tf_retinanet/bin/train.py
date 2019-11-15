@@ -125,7 +125,7 @@ def main(args=None):
 	prediction_model = models.retinanet.retinanet_bbox(training_model)
 
 	# Create the callbacks.
-	callbacks = create_callbacks(
+	callbacks = get_callbacks(
 		config['callbacks'],
 		model,
 		training_model,

@@ -71,6 +71,8 @@ def set_generator_defaults(config):
 	if 'details' not in config['generator']:
 		config['generator']['details'] = {}
 
+	return config
+
 
 def set_submdodels_defaults(config):
 	if 'submodels' not in config:
@@ -206,7 +208,7 @@ def set_evaluation_defaults(config):
 	return config
 
 
-def set_evaluation_args(args):
+def make_evaluation_config(args):
 	# Parse the configuration file.
 	config = {}
 	if args.config:

@@ -45,21 +45,21 @@ class Evaluate(tf.keras.callbacks.Callback):
 			weighted_average : Compute the mAP using the weighted average of precisions among classes.
 			verbose          : Set the verbosity level, by default this is set to 1.
 		"""
-		self.generator       = generator
-		self.iou_threshold   = iou_threshold
-		self.score_threshold = score_threshold
-		self.max_detections  = max_detections
-		self.save_path       = save_path
-		self.tensorboard     = tensorboard
+		self.generator        = generator
+		self.iou_threshold    = iou_threshold
+		self.score_threshold  = score_threshold
+		self.max_detections   = max_detections
+		self.save_path        = save_path
+		self.tensorboard      = tensorboard
 		self.weighted_average = weighted_average
-		self.verbose         = verbose
+		self.verbose          = verbose
 
 		super(Evaluate, self).__init__()
 
 	def on_epoch_end(self, epoch, logs=None):
 		logs = logs or {}
 
-		# run evaluation
+		# Run evaluation.
 		average_precisions, inference_time = evaluate(
 			self.generator,
 			self.model,
@@ -69,7 +69,7 @@ class Evaluate(tf.keras.callbacks.Callback):
 			save_path=self.save_path
 		)
 
-		# compute per class average precision
+		# Compute per class average precision.
 		total_instances = []
 		precisions = []
 		for label, (average_precision, num_annotations ) in average_precisions.items():

@@ -19,6 +19,7 @@ class SubmodelsManager(object):
 		Args:
 			config: configuration dictionary.
 		"""
+		self.classes              = []
 		self.classification       = None
 		self.regression           = None
 		self.additional_submodels = []
@@ -45,7 +46,7 @@ class SubmodelsManager(object):
 					submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel['type']])
 					submodel_pkg = getattr(submodel_pkg, submodel['type'])
 				except ImportError:
-					raise(submodel['type'] + 'is not a valid submodel')
+					raise ValueError(submodel['type'] + 'is not a valid submodel')
 				submodel['class'] = submodel_pkg.from_config(submodel['details'])
 				# If the submodel is indicated as main, set it in the local submodels.
 				if 'main_classification' in submodel and submodel['main_classification']:
@@ -58,24 +59,13 @@ class SubmodelsManager(object):
 
 		# We need at least a main classification and a regression submodel to build RetinaNet.
 		if not self.classification:
-			raise("Could not find main classification submodel.")
+			raise ValueError("Could not find main classification submodel.")
 		if not self.regression:
-			raise("Could not find main regression submodel.")
+			raise ValueError("Could not find main regression submodel.")
 
 		# Parse the classes, if provided.
 		if 'classes' in self.classification['details']:
 			self.classes = self.classification['details']['classes']
-		else:
-			self.classes = None
-
-
-	def num_classes(self):
-		""" If classes are provided in the configuration file, return number of classes.
-		"""
-		if self.classes:
-			return len(self.classes)
-		else:
-			return None
 
 
 	def create(self, num_classes=None):
@@ -84,6 +74,7 @@ class SubmodelsManager(object):
 			num_classes: number of classification classes.
 		"""
 		# If the number of classes is provided, add the information to the classification details.
+		# It is necessary for COCO, where the number of classes comes form the generator and not the config file.
 		if num_classes:
 			self.classification['details']['num_classes'] = num_classes
 

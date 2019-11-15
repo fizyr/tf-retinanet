@@ -2,7 +2,6 @@ from . import Submodel
 from ... import initializers
 from ...losses import focal
 import tensorflow as tf
-import numpy as np
 
 
 def default_classification_model(
@@ -69,6 +68,7 @@ class ClassificationSubmodel(Submodel):
 		""" Constructor for "standard" classification submodel.
 		Args
 			config: Defines the configuration for the submodel.
+			TODO: list required info in config
 		"""
 		assert('num_classes' in config), "Number of classes not in config."
 

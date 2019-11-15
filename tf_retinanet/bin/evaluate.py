@@ -128,7 +128,7 @@ def main(args=None):
 			save_path=args.save_path
 		)
 
-		# print evaluation
+		# Print evaluation results.
 		total_instances = []
 		precisions = []
 		for label, (average_precision, num_annotations) in average_precisions.items():
