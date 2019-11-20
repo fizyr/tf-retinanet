@@ -30,12 +30,12 @@ class SubmodelsManager(object):
 				submodel['details'] = {}
 
 			# Parse the default submodels.
-			if submodel['type'] == 'default_regression':
+			if submodel['category'] == 'default_regression':
 				from .regression import BboxRegressionSubmodel
 				submodel['class'] = BboxRegressionSubmodel
 				self.regression = submodel
 				continue
-			elif submodel['type'] == 'default_classification':
+			elif submodel['category'] == 'default_classification':
 				from .classification import ClassificationSubmodel
 				submodel['class'] = ClassificationSubmodel
 				self.classification = submodel
@@ -43,11 +43,11 @@ class SubmodelsManager(object):
 			else:
 				# Search the indicated submodels in external packages.
 				try:
-					submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel['type']])
-					submodel_pkg = getattr(submodel_pkg, submodel['type'])
+					submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel['category']])
+					submodel_pkg = getattr(submodel_pkg, submodel['category'])
 				except ImportError:
-					raise ValueError(submodel['type'] + 'is not a valid submodel')
-				submodel['class'] = submodel_pkg.from_config(submodel['details'])
+					raise ValueError(submodel['category'] + 'is not a valid submodel')
+				submodel['class'] = submodel_pkg.parse_submodel(submodel['details'])
 				# If the submodel is indicated as main, set it in the local submodels.
 				if 'main_classification' in submodel and submodel['main_classification']:
 					self.classification = submodel
