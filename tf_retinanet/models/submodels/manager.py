@@ -19,7 +19,6 @@ class SubmodelsManager(object):
 		Args:
 			config: configuration dictionary.
 		"""
-		self.classes              = []
 		self.classification       = None
 		self.regression           = None
 		self.additional_submodels = []
@@ -62,10 +61,6 @@ class SubmodelsManager(object):
 			raise ValueError("Could not find main classification submodel.")
 		if not self.regression:
 			raise ValueError("Could not find main regression submodel.")
-
-		# Parse the classes, if provided.
-		if 'classes' in self.classification['details']:
-			self.classes = self.classification['details']['classes']
 
 
 	def create(self, num_classes=None):
