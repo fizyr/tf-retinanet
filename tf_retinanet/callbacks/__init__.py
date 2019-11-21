@@ -15,3 +15,39 @@ limitations under the License.
 """
 
 from .common import *  # noqa: F401,F403
+
+import os
+
+
+def get_callbacks(
+	config,
+	model,
+	training_model,
+	prediction_model,
+	validation_generator=None,
+	evaluation_callback=None
+):
+	callbacks = []
+
+	# Save snapshots of the model.
+	os.makedirs(os.path.join(config['snapshots_path'], config['project_name']))
+	checkpoint = tf.keras.callbacks.ModelCheckpoint(
+		os.path.join(
+			config['snapshots_path'],
+			config['project_name'],
+			'{epoch:02d}.h5'
+		),
+		verbose=1,
+	)
+	checkpoint = RedirectModel(checkpoint, model)
+	callbacks.append(checkpoint)
+
+	# Evaluate the model.
+	if validation_generator:
+		if not evaluation_callback:
+			raise('Standard evaluation_callback not implement yet.')
+		evaluation_callback = evaluation_callback(validation_generator)
+		evaluation_callback = RedirectModel(evaluation_callback, prediction_model)
+		callbacks.append(evaluation_callback)
+
+	return callbacks

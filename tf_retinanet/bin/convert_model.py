@@ -30,41 +30,10 @@ if __name__ == "__main__" and __package__ is None:
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
 from ..              import models
 from ..backbones     import get_backbone
+from ..generators    import get_generators
 from ..utils.anchors import parse_anchor_parameters
 from ..utils.gpu     import setup_gpu
-from ..utils.config  import parse_yaml, parse_additional_options
-
-
-def set_defaults(config):
-	# Set defaults for backbone.
-	if 'backbone' not in config:
-		config['backbone'] = {}
-	if 'details' not in config['backbone']:
-		config['backbone']['details'] = {}
-
-	# Set defaults for generator.
-	if 'generator' not in config:
-		config['generator'] = {}
-	if 'details' not in config['generator']:
-		config['generator']['details'] = {}
-
-	# Set defaults for submodels.
-	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'names' not in config['submodels']:
-		config['submodels']['names'] = ['default_regression', 'default_classification']
-	if 'details' not in config['submodels']:
-		config['submodels']['details'] = {}
-
-	# Set the defaults for convert.
-	if 'convert' not in config:
-		config['convert'] = {}
-	if 'nms' not in config['convert']:
-		config['convert']['nms'] = True
-	if 'class_specific_filter' not in config['convert']:
-		config['convert']['class_specific_filter'] = True
-
-	return config
+from ..utils.config  import make_conversion_config
 
 
 def parse_args(args):
@@ -86,37 +55,14 @@ def parse_args(args):
 	return parser.parse_args(args)
 
 
-def set_args(config, args):
-	# Additional config; start from this so it can be overwritten by the other command line options.
-	if args.o:
-		config = parse_additional_options(config, args.o)
-
-	if args.backbone:
-		config['backbone']['name'] = args.backbone
-
-	# Convert config.
-	config['convert']['nms'] = args.nms
-	config['convert']['class_specific_filter'] = args.class_specific_filter
-
-
-	return config
-
-
 def main(args=None, config=None):
 	# Parse arguments.
 	if args is None:
 		args = sys.argv[1:]
 	args = parse_args(args)
 
-	# Parse the configuration file.
-	if config is None:
-		config = {}
-	if args.config:
-		config = parse_yaml(args.config)
-	config = set_defaults(config)
-
-	# Apply the command line arguments to config.
-	config = set_args(config, args)
+	# Parse command line and configuration file settings.
+	config = make_conversion_config(args)
 
 	# Set modified tf session to avoid using the GPUs.
 	setup_gpu("cpu")

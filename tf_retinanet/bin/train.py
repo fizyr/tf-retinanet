@@ -32,99 +32,10 @@ if __name__ == "__main__" and __package__ is None:
 from ..             import losses
 from ..             import models
 from ..backbones    import get_backbone
-from ..callbacks    import RedirectModel
+from ..callbacks    import get_callbacks
 from ..generators   import get_generators
 from ..utils.gpu    import setup_gpu
-from ..utils.config import dump_yaml, parse_yaml, parse_additional_options
-
-
-def set_defaults(config):
-	# Set defaults for backbone.
-	if 'backbone' not in config:
-		config['backbone'] = {}
-	if 'details' not in config['backbone']:
-		config['backbone']['details'] = {}
-
-	# Set defaults for generator.
-	if 'generator' not in config:
-		config['generator'] = {}
-	if 'details' not in config['generator']:
-		config['generator']['details'] = {}
-
-	# Set defaults for submodels.
-	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'names' not in config['submodels']:
-		config['submodels']['names'] = ['default_regression', 'default_classification']
-	if 'details' not in config['submodels']:
-		config['submodels']['details'] = {}
-
-	# Set defaults for callbacks config.
-	if 'callbacks' not in config:
-		config['callbacks'] = {}
-	if ('snapshots_path' not in config['callbacks']) or (not config['callbacks']['snapshots_path']):
-		from pathlib import Path
-		home = str(Path.home())
-		config['callbacks']['snapshots_path'] = os.path.join(home, 'retinanet-snapshots')
-	if ('project_name' not in config['callbacks']) or (not config['callbacks']['project_name']):
-		from datetime import datetime
-		config['callbacks']['project_name'] = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-
-	# Set defaults for train config.
-	if 'train' not in config:
-		config['train'] = {}
-	if 'steps_per_epoch' not in config['train']:
-		config['train']['steps_per_epoch'] = 10000
-	if 'epochs' not in config['train']:
-		config['train']['epochs'] = 50
-	if 'use_multiprocessing' not in config['train']:
-		config['train']['use_multiprocessing'] = False
-	if 'workers' not in config['train']:
-		config['train']['workers'] = 1
-	if 'max_queue_size' not in config['train']:
-		config['train']['max_queue_size'] = 10
-	if 'gpu' not in config['train']:
-		config['train']['gpu'] = 0
-	if 'lr' not in config['train']:
-		config['train']['lr'] = 1e-5
-	if 'weights' not in config['train']:
-		config['train']['weights'] = None
-
-	return config
-
-
-def create_callbacks(
-	config,
-	model,
-	training_model,
-	prediction_model,
-	validation_generator=None,
-	evaluation_callback=None
-):
-	callbacks = []
-
-	# Save snapshots of the model.
-	os.makedirs(os.path.join(config['snapshots_path'], config['project_name']))
-	checkpoint = tf.keras.callbacks.ModelCheckpoint(
-		os.path.join(
-			config['snapshots_path'],
-			config['project_name'],
-			'{epoch:02d}.h5'
-		),
-		verbose=1,
-	)
-	checkpoint = RedirectModel(checkpoint, model)
-	callbacks.append(checkpoint)
-
-	# Evaluate the model.
-	if validation_generator:
-		if not evaluation_callback:
-			raise('Standard evaluation_callback not implement yet.')
-		evaluation_callback = evaluation_callback(validation_generator)
-		evaluation_callback = RedirectModel(evaluation_callback, prediction_model)
-		callbacks.append(evaluation_callback)
-
-	return callbacks
+from ..utils.config import dump_yaml, make_training_config
 
 
 def parse_args(args):
@@ -164,73 +75,14 @@ def parse_args(args):
 	return parser.parse_args(args)
 
 
-def set_args(config, args):
-	# Additional config; start from this so it can be overwritten by the other command line options.
-	if args.o:
-		config = parse_additional_options(config, args.o)
-
-	if args.backbone:
-		config['backbone']['name'] = args.backbone
-	if args.generator:
-		config['generator']['name'] = args.generator
-
-	# Backbone config.
-	if args.freeze_backbone:
-		config['backbone']['details']['freeze'] = args.freeze_backbone
-	if args.backbone_weights:
-		config['backbone']['details']['weights'] = args.backbone_weights
-
-	# Generator config.
-	if args.random_transform:
-		config['generator']['details']['transform_generator'] = 'random'
-	if args.random_visual_effect:
-		config['generator']['details']['visual_effect_generator'] = 'random'
-	if args.batch_size:
-		config['generator']['details']['batch_size'] = args.batch_size
-	if args.group_method:
-		config['generator']['details']['group_method'] = args.group_method
-	if args.shuffle_groups:
-		config['generator']['details']['shuffle_groups'] = args.shuffle_groups
-	if args.image_min_side:
-		config['generator']['details']['image_min_side'] = args.image_min_side
-	if args.image_max_side:
-		config['generator']['details']['image_max_side'] = args.image_max_side
-
-	# Train config.
-	if args.gpu:
-		config['train']['gpu'] = args.gpu
-	if args.epochs:
-		config['train']['epochs'] = args.epochs
-	if args.steps:
-		config['train']['steps_per_epoch'] = args.steps
-	if args.lr:
-		config['train']['lr'] = args.lr
-	if args.multiprocessing:
-		config['train']['use_multiprocessing'] = args.multiprocessing
-	if args.workers:
-		config['train']['workers'] = args.workers
-	if args.max_queue_size:
-		config['train']['max_queue_size'] = args.max_queue_size
-	if args.weights:
-		config['train']['weights'] = args.weights
-
-	return config
-
-
 def main(args=None):
 	# Parse command line arguments.
 	if args is None:
 		args = sys.argv[1:]
 	args = parse_args(args)
 
-	# Parse the configuration file.
-	config = {}
-	if args.config:
-		config = parse_yaml(args.config)
-	config = set_defaults(config)
-
-	# Apply the command line arguments to config.
-	config = set_args(config, args)
+	# Parse command line and configuration file settings.
+	config = make_training_config(args)
 
 	# Disable eager, prevents memory leak and makes training faster.
 	tf.compat.v1.disable_eager_execution()
@@ -273,7 +125,7 @@ def main(args=None):
 	prediction_model = models.retinanet.retinanet_bbox(training_model)
 
 	# Create the callbacks.
-	callbacks = create_callbacks(
+	callbacks = get_callbacks(
 		config['callbacks'],
 		model,
 		training_model,
