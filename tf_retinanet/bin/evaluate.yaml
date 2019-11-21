@@ -3,7 +3,10 @@ backbone:
   details:
     type: resnet50
 
-generator:
+evaluate:
+  weights: /insert/weights/path/to/model.h5
+
+  generator:
   name: coco
   details:
     data_dir: /srv/dataset/COCO/
