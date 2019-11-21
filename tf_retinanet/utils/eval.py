@@ -150,6 +150,32 @@ def _get_annotations(generator):
 	return all_annotations
 
 
+def print_results(generator, average_precisions, inference_time):
+	""" Print evaluation results.
+
+	# Arguments
+		generator         : The generator that represents the dataset to evaluate.
+		average_precision : Average precisions per label.
+		inference_time    : Total time spent on inference.
+	"""
+	total_instances = []
+	precisions      = []
+
+	for label, (average_precision, num_annotations) in average_precisions.items():
+		print('{:.0f} instances of class'.format(num_annotations),
+			  generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
+		total_instances.append(num_annotations)
+		precisions.append(average_precision)
+
+	if sum(total_instances) == 0:
+		print('No test instances found.')
+		return
+
+	print('Inference time for {:.0f} images: {:.4f}'.format(generator.size(), inference_time))
+	print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
+	print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
+
+
 def evaluate(
 	generator,
 	model,
@@ -240,4 +266,4 @@ def evaluate(
 
 		inference_time = np.sum(all_inferences) / generator.size()
 
-	return average_precisions, inference_time
+	print_results(generator, average_precisions, inference_time)

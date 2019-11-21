@@ -56,7 +56,7 @@ def parse_args(args):
 	parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',    default=0.05, type=float)
 	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',  default=0.5,  type=float)
 	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                         default=100,  type=int)
-	parser.add_argument('--save-path',       help='Path for saving images with detections (doesn\'t work for COCO).',                  type=str)
+	parser.add_argument('--save-path',       help='Path for saving images with detections (doesn\'t work for COCO).',    default=None, type=str)
 
 	# Additional config.
 	parser.add_argument('-o', help='Additional config.',action='append', nargs=1)
@@ -93,18 +93,17 @@ def main(args=None):
 	)
 
 	if 'test' not in generators:
-		raise 'Could not get test generator.'
+		raise ValueError('Could not get test generator.')
 	test_generator = generators['test']
 
 	evaluate = None
 	if 'custom_evaluation' not in generators:
-		raise('Evaluation not implement yet.')
-	if 'custom_evaluation' in generators:
-		evaluate = generators['custom_evaluation']
+		raise ValueError('Evaluation not implement yet.')
+	evaluate = generators['custom_evaluation']
 
 	# Load model.
 	if config['evaluate']['weights'] is None:
-		raise 'Could not get weights.'
+		raise ValueError('Could not get weights.')
 	model = models.load_model(config['evaluate']['weights'], backbone=backbone, submodels=submodels)
 
 	# Create prediction model.
@@ -116,34 +115,20 @@ def main(args=None):
 
 		model = models.retinanet.convert_model(model, anchor_params=anchor_params)
 
+	# Print model.
+	#print(model.summary())
+
 	if config['generator']['name'] == 'coco':
 		evaluation = evaluate(test_generator, model)
 	else:
-		average_precisions, inference_time = evaluate(
-			generators['test'],
+		evaluate(
+			test_generator,
 			model,
 			iou_threshold=args.iou_threshold,
 			score_threshold=args.score_threshold,
 			max_detections=args.max_detections,
 			save_path=args.save_path
 		)
-
-		# Print evaluation results.
-		total_instances = []
-		precisions = []
-		for label, (average_precision, num_annotations) in average_precisions.items():
-			print('{:.0f} instances of class'.format(num_annotations),
-				  generators['test'].label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
-			total_instances.append(num_annotations)
-			precisions.append(average_precision)
-
-		if sum(total_instances) == 0:
-			print('No test instances found.')
-			return
-
-		print('Inference time for {:.0f} images: {:.4f}'.format(generators['test'].size(), inference_time))
-		print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
-		print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
 
 
 if __name__ == '__main__':

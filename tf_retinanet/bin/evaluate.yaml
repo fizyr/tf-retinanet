@@ -1,0 +1,15 @@
+backbone:
+  name: legacy-resnet
+  details:
+    type: resnet50
+
+evaluate:
+  weights: /home/eliscio/retinanet-snapshots/2019_11_11_16_01_17/converted.h5
+
+generator:
+  name: coco
+  details:
+    data_dir: /srv/datasets/COCO
+    train_set_name: none
+    test_set_name: eval2017
+    validation_set_name: none
