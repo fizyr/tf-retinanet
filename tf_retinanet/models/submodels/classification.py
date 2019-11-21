@@ -63,20 +63,32 @@ def default_classification_model(
 
 class ClassificationSubmodel(Submodel):
 	""" simple classification submodel, performing multi-class prediction.
-	Args
-		num_classes: List of class names.
 	"""
-	def __init__(self, num_classes, annotation_source=None, **kwargs):
-		assert(num_classes > 0), "No classes to classify."
+	def __init__(self, config, **kwargs):
+		""" Constructor for "standard" classification submodel.
+		Args
+			config: Defines the configuration for the submodel.
+			TODO: list required info in config
+		"""
+		assert('num_classes' in config), "Number of classes not in config."
 
-		self.num_classes = num_classes
+		if 'name' not in config:
+			config['name'] = 'classification'
+		self.name = config['name']
 
-		super(ClassificationSubmodel, self).__init__(annotation_source)
+		self.num_classes = config['num_classes']
+		assert(self.num_classes > 0), "No classes to classify."
+
+		super(ClassificationSubmodel, self).__init__()
 
 	def get_name(self):
-		return 'classification'
+		""" Return the name of the submodel.
+		"""
+		return self.name
 
 	def __repr__(self):
+		""" Return a description of the model.
+		"""
 		return 'ClassificationSubmodel({})'.format(str(self.num_classes))
 
 	def size(self):
