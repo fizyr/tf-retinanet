@@ -238,8 +238,8 @@ def main(args=None):
 	# Set gpu configuration.
 	setup_gpu(config['train']['gpu'])
 
-	# Get the submodels.
-	submodels = models.submodels.get_submodels(config)
+	# Get the submodels manager.
+	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.
 	backbone = get_backbone(config)
@@ -247,7 +247,7 @@ def main(args=None):
 	# Get the generators and the submodels updated with info of the generators.
 	generators, submodels = get_generators(
 		config,
-		submodels,
+		submodels_manager,
 		preprocess_image=backbone.preprocess_image
 	)
 

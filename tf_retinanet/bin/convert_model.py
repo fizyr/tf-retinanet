@@ -126,11 +126,18 @@ def main(args=None, config=None):
 	if 'anchors' in config['generator']['details']:
 		anchor_params = parse_anchor_parameters(config['generator']['details']['anchors'])
 
-	# Get the submodels.
-	submodels = models.submodels.get_submodels(config)
+	# Get the submodels manager.
+	submodels_manager = models.submodels.SubmodelsManager(config)
 
 	# Get the backbone.
 	backbone = get_backbone(config)
+
+	# Get the generators and the submodels updated with info of the generators.
+	generators, submodels = get_generators(
+		config,
+		submodels_manager,
+		preprocess_image=backbone.preprocess_image
+	)
 
 	# Load the model.
 	model = models.load_model(args.model_in, backbone=backbone, submodels=submodels)
