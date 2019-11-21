@@ -11,15 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .manager import SubmodelsManager
+
 class Submodel(object):
 	""" Abstract class for all submodels.
 	"""
-	def __init__(self, annotation_source=None):
+	def __init__(self):
 		""" Constructor for submodel.
-		Args
-			annotation_source: Defines where in the annotations to get the data from.
 		"""
-		self.annotation_source = annotation_source
 		super(Submodel, self).__init__()
 
 
@@ -47,6 +46,18 @@ class Submodel(object):
 		""" Return the loss functions to use for this submodel.
 		"""
 		raise NotImplementedError()
+
+
+	def get_evaluation(self):
+		""" return the custom evaluation procedure.
+		"""
+		return None
+
+
+	def get_evaluation_callback(self):
+		""" return the custom evaluation callback.
+		"""
+		return None
 
 
 	def random_transform(self, image, annotations, transform, transform_parameters):
@@ -78,30 +89,3 @@ class Submodel(object):
 		"""
 		return {}
 
-
-def preprocess_config(config):
-	return config
-
-
-def get_submodels(config, **kwargs):
-	submodels = []
-	submodels_names = config['submodels']['names']
-	if 'default_regression' in submodels_names:
-		submodels_names.remove('default_regression')
-		from .regression import BboxRegressionSubmodel
-		submodels.append(BboxRegressionSubmodel)
-	if 'default_classification' in submodels_names:
-		submodels_names.remove('default_classification')
-		from .classification import ClassificationSubmodel
-		submodels.append(ClassificationSubmodel)
-	for submodel_name in submodels_names:
-		try:
-			submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel_name])
-			submodel_pkg = getattr(submodel_pkg, submodel_name)
-		except ImportError:
-			raise(submodel_name + 'is not a valid submodel')
-		submodels.append(submodel_pkg.from_config(
-			preprocess_config(config['submodels']['details']),
-			**kwargs
-		))
-	return submodels
