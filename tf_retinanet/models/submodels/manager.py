@@ -11,6 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from ...utils import import_package
+
 class SubmodelsManager(object):
 	""" Class that parses submodels from configuration and creates them.
 	"""
@@ -40,13 +42,8 @@ class SubmodelsManager(object):
 				self.classification = submodel
 				continue
 			else:
-				# Search the indicated submodels in external packages.
-				try:
-					submodel_pkg = __import__('tf_retinanet_submodels', fromlist=[submodel['category']])
-					submodel_pkg = getattr(submodel_pkg, submodel['category'])
-				except ImportError:
-					raise ValueError(submodel['category'] + 'is not a valid submodel')
-				submodel['class'] = submodel_pkg.parse_submodel(submodel['details'])
+				submodel_package  = import_package(submodel['category'], 'tf_retinanet_submodels')
+				submodel['class'] = submodel_package.parse_submodel(submodel['details'])
 				# If the submodel is indicated as main, set it in the local submodels.
 				if 'main_classification' in submodel and submodel['main_classification']:
 					self.classification = submodel

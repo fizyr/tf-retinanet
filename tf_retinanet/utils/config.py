@@ -281,4 +281,3 @@ def make_conversion_config(args):
 	config['convert']['class_specific_filter'] = args.class_specific_filter
 
 	return config
-

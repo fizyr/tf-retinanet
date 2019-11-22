@@ -16,6 +16,7 @@ limitations under the License.
 
 from .generator import Generator  # noqa: F401
 
+from ..utils import import_package
 from ..utils.anchors import (
 	anchor_targets_bbox,
 	guess_shapes
@@ -112,12 +113,7 @@ def preprocess_config(config):
 
 
 def get_generators(config, submodels_manager, preprocess_image, **kwargs):
-	try:
-		generator_name = config['generator']['name']
-		generator_pkg = __import__('tf_retinanet_generators', fromlist=[generator_name])
-		generator_pkg = getattr(generator_pkg, generator_name)
-	except ImportError:
-		raise(config['generator']['name'] + 'is not a valid generator')
+	generator_pkg = import_package(config['generator']['name'], 'tf_retinanet_generators')
 
 	return generator_pkg.from_config(
 		preprocess_config(config['generator']['details']),

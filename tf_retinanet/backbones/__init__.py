@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from ..utils import import_package
+
 
 class Backbone(object):
 	""" This class stores additional information on backbones.
@@ -86,11 +88,6 @@ def process_backbone_config(config):
 
 
 def get_backbone(config):
-	try:
-		backbone_name = config['backbone']['name']
-		backbone_pkg = __import__('tf_retinanet_backbones', fromlist=[backbone_name])
-		backbone_pkg = getattr(backbone_pkg, backbone_name)
-	except ImportError:
-		raise(config['backbone']['name'] + 'is not a valid backbone')
+	backbone_pkg = import_package(config['backbone']['name'], 'tf_retinanet_backbones')
 
 	return backbone_pkg.from_config(process_backbone_config(config))
