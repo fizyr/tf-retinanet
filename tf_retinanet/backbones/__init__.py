@@ -61,33 +61,7 @@ class Backbone(object):
 		raise NotImplementedError('preprocess_image method not implemented.')
 
 
-def process_backbone_config(config):
-	# Get the backbone config.
-	backbone_config = config['backbone']['details']
-
-	# If the imagenet weights flag is set for the retinanet model set it for the backbone.
-	if 'train' in config and 'weights' in config['train'] and config['train']['weights'] == 'imagenet':
-		backbone_config['weights'] = 'imagenet'
-
-	# If the none weights flag is set for the retinanet model set it for the backbone.
-	if 'train' in config and 'weights' in config['train'] and config['train']['weights'] == 'none':
-		backbone_config['weights'] = 'none'
-
-	# If the weights flag is not set for the backbone set it to imagenet.
-	if 'weights' not in backbone_config:
-		backbone_config['weights'] = 'imagenet'
-
-	# If the weights flag is set to none pass it to the backbone.
-	if backbone_config['weights']  == 'none':
-		backbone_config['weights'] = None
-
-	# If freeze flag is not set, set it to false.
-	if 'freeze' not in backbone_config:
-		backbone_config['freeze'] = False
-	return backbone_config
-
-
 def get_backbone(config):
 	backbone_pkg = import_package(config['backbone']['name'], 'tf_retinanet_backbones')
 
-	return backbone_pkg.from_config(process_backbone_config(config))
+	return backbone_pkg.from_config(config['backbone']['details'])

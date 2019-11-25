@@ -17,7 +17,10 @@ limitations under the License.
 import yaml
 import os
 import operator
+from pathlib import Path
+from datetime import datetime
 from functools import reduce
+import collections.abc
 
 
 def parse_yaml(path):
@@ -30,12 +33,26 @@ def parse_yaml(path):
 
 
 def dump_yaml(config):
+	print('CONFIG generator: ', config['generator'])
 	with open(os.path.join(
 		config['callbacks']['snapshots_path'],
 		config['callbacks']['project_name'],
 		'config.yaml'
 	), 'w') as dump_config:
-		yaml.dump(config, dump_config, default_flow_style=False)
+		for key, value in config['generator']['details'].items():
+			yaml.dump(value, dump_config, default_flow_style=False)
+			print('SUCCESS with key: ', key)
+
+
+def set_defaults(config, default_config):
+	merged_dict = default_config
+	for key, value in config.items():
+		if isinstance(value, collections.abc.Mapping):
+			merged_dict[key] = set_defaults(value, merged_dict.get(key, {}))
+		else:
+			merged_dict[key] = value
+
+	return merged_dict
 
 
 def get_drom_dict(datadict, maplist):
@@ -56,73 +73,62 @@ def parse_additional_options(config, options):
 	return config
 
 
-def set_backbone_defaults(config):
-	if 'backbone' not in config:
-		config['backbone'] = {}
-	if 'details' not in config['backbone']:
-		config['backbone']['details'] = {}
-
-	return config
-
-
-def set_generator_defaults(config):
-	if 'generator' not in config:
-		config['generator'] = {}
-	if 'details' not in config['generator']:
-		config['generator']['details'] = {}
-
-	return config
+default_backbone_config = {
+	'details': {
+		'weights': 'imagenet',
+		'freeze' : False,
+	}
+}
 
 
-def set_submdodels_defaults(config):
-	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'retinanet' not in config['submodels']:
-		config['submodels']['retinanet'] = []
-	if not config['submodels']['retinanet']:
-		config['submodels']['retinanet'].append({'type': 'default_regression',     'name': 'bbox_regression'})
-		config['submodels']['retinanet'].append({'type': 'default_classification', 'name': 'classification'})
+default_generator_config = {
+	'details': {
+		'anchors'                : {},
+		'batch_size'             : 1,
+		'group_method'           : 'ratio',  # one of 'none', 'random', 'ratio'
+		'image_min_side'         : 800,
+		'image_max_side'         : 1333,
+		'shuffle_groups'         : True,
+		'transform_generator'    : None,
+		'transform_parameters'   : None,
+		'visual_effect_generator': None,
+	}
+}
 
-	return config
+
+default_submodels_config = {
+	'retinanet': [
+		{'category': 'default_regression',     'name': 'bbox_regression'},
+		{'category': 'default_classification', 'name': 'classification'},
+	]
+}
 
 
-def set_training_defaults(config):
-	config = set_backbone_defaults(config)
-	config = set_generator_defaults(config)
-	config = set_submdodels_defaults(config)
+default_callbacks_config = {
+	'snapshots_path': os.path.join(str(Path.home()), 'retinanet-snapshots'),
+	'project_name'  : datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
+}
 
-	# Set defaults for callbacks config.
-	if 'callbacks' not in config:
-		config['callbacks'] = {}
-	if ('snapshots_path' not in config['callbacks']) or (not config['callbacks']['snapshots_path']):
-		from pathlib import Path
-		home = str(Path.home())
-		config['callbacks']['snapshots_path'] = os.path.join(home, 'retinanet-snapshots')
-	if ('project_name' not in config['callbacks']) or (not config['callbacks']['project_name']):
-		from datetime import datetime
-		config['callbacks']['project_name'] = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
-	# Set defaults for train config.
-	if 'train' not in config:
-		config['train'] = {}
-	if 'steps_per_epoch' not in config['train']:
-		config['train']['steps_per_epoch'] = 10000
-	if 'epochs' not in config['train']:
-		config['train']['epochs'] = 50
-	if 'use_multiprocessing' not in config['train']:
-		config['train']['use_multiprocessing'] = False
-	if 'workers' not in config['train']:
-		config['train']['workers'] = 1
-	if 'max_queue_size' not in config['train']:
-		config['train']['max_queue_size'] = 10
-	if 'gpu' not in config['train']:
-		config['train']['gpu'] = 0
-	if 'lr' not in config['train']:
-		config['train']['lr'] = 1e-5
-	if 'weights' not in config['train']:
-		config['train']['weights'] = None
+default_train_config = {
+	'epochs'             : 50,
+	'gpu'                : 0,
+	'lr'                 : 1e-5,
+	'max_queue_size'     : 10,
+	'steps_per_epoch'    : 10000,
+	'use_multiprocessing': False,
+	'weights'            : 'imagenet',
+	'workers'            : 1,
+}
 
-	return config
+
+default_training_config = {
+	'backbone' : default_backbone_config,
+	'callbacks': default_callbacks_config,
+	'generator': default_generator_config,
+	'submodels': default_submodels_config,
+	'train'    : default_train_config,
+}
 
 
 def make_training_config(args):
@@ -130,7 +136,7 @@ def make_training_config(args):
 	config = {}
 	if args.config:
 		config = parse_yaml(args.config)
-	config = set_training_defaults(config)
+	config = set_defaults(config, default_training_config)
 
 	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
@@ -184,28 +190,22 @@ def make_training_config(args):
 	return config
 
 
-def set_evaluation_defaults(config):
-	config = set_backbone_defaults(config)
-	config = set_generator_defaults(config)
-	config = set_submdodels_defaults(config)
+default_eval_config = {
+	'convert_model'  : False,
+	'gpu'            : 0,
+	'iou_threshold'  : 0.5,
+	'max_detections' : 100,
+	'score_threshold': 0.05,
+	'weights'        : None,
+}
 
-	# Set defaults for evaluate config.
-	if 'evaluate' not in config:
-		config['evaluate'] = {}
-	if 'convert_model' not in config['evaluate']:
-		config['evaluate']['convert_model'] = False
-	if 'gpu' not in config['evaluate']:
-		config['evaluate']['gpu'] = 0
-	if 'score_threshold' not in config['evaluate']:
-		config['evaluate']['score_threshold'] = 0.05
-	if 'iou_threshold' not in config['evaluate']:
-		config['evaluate']['iou_threshold'] = 0.5
-	if 'max_detections' not in config['evaluate']:
-		config['evaluate']['max_detections'] = 100
-	if 'weights' not in config['evaluate']:
-		config['evaluate']['weights'] = None
 
-	return config
+default_evaluation_config = {
+	'backbone' : default_backbone_config,
+	'generator': default_generator_config,
+	'submodels': default_submodels_config,
+	'evaluate' : default_eval_config,
+}
 
 
 def make_evaluation_config(args):
@@ -213,7 +213,7 @@ def make_evaluation_config(args):
 	config = {}
 	if args.config:
 		config = parse_yaml(args.config)
-	config = set_evaluation_defaults(config)
+	config = set_defaults(config, default_evaluation_config)
 
 	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
@@ -245,20 +245,18 @@ def make_evaluation_config(args):
 	return config
 
 
-def set_conversion_defaults(config):
-	config = set_backbone_defaults(config)
-	config = set_generator_defaults(config)
-	config = set_submdodels_defaults(config)
+default_convert_config = {
+	'class_specific_filter': True,
+	'nms'                  : True,
+}
 
-	# Set the defaults for conversion config.
-	if 'convert' not in config:
-		config['convert'] = {}
-	if 'nms' not in config['convert']:
-		config['convert']['nms'] = True
-	if 'class_specific_filter' not in config['convert']:
-		config['convert']['class_specific_filter'] = True
 
-	return config
+default_conversion_config = {
+	'backbone' : default_backbone_config,
+	'generator': default_generator_config,
+	'submodels': default_submodels_config,
+	'convert'  : default_convert_config,
+}
 
 
 def make_conversion_config(args):
@@ -267,7 +265,7 @@ def make_conversion_config(args):
 		config = {}
 	if args.config:
 		config = parse_yaml(args.config)
-	config = set_conversion_defaults(config)
+	config = set_defaults(config, default_conversion_config)
 
 	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:

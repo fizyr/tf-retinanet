@@ -107,8 +107,6 @@ class Generator(tf.keras.utils.Sequence):
 			shuffle_groups         = config['shuffle_groups'],
 			image_min_side         = config['image_min_side'],
 			transform_parameters   = config['transform_parameters'],
-			compute_anchor_targets = config['compute_anchor_targets'],
-			compute_shapes         = config['compute_shapes'],
 			anchors_config         = config['anchors'],
 			preprocess_image       = preprocess_image
 		)
