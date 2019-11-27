@@ -17,10 +17,14 @@ limitations under the License.
 import yaml
 import os
 import operator
-from pathlib import Path
-from datetime import datetime
 from functools import reduce
 import collections.abc
+
+from .defaults import (
+		default_training_config,
+		default_evaluation_config,
+		default_conversion_config
+		)
 
 
 def parse_yaml(path):
@@ -71,64 +75,6 @@ def parse_additional_options(config, options):
 		temp_config = config
 		set_in_dict(config, keys, value)
 	return config
-
-
-default_backbone_config = {
-	'details': {
-		'weights': 'imagenet',
-		'freeze' : False,
-	}
-}
-
-
-default_generator_config = {
-	'details': {
-		'anchors'                : {},
-		'batch_size'             : 1,
-		'group_method'           : 'ratio',  # one of 'none', 'random', 'ratio'
-		'image_min_side'         : 800,
-		'image_max_side'         : 1333,
-		'shuffle_groups'         : True,
-		'transform_generator'    : None,
-		'transform_parameters'   : None,
-		'visual_effect_generator': None,
-	}
-}
-
-
-default_submodels_config = {
-	'retinanet': [
-		{'category': 'default_regression',     'name': 'bbox_regression'},
-		{'category': 'default_classification', 'name': 'classification'},
-	]
-}
-
-
-default_callbacks_config = {
-	'snapshots_path': os.path.join(str(Path.home()), 'retinanet-snapshots'),
-	'project_name'  : datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
-}
-
-
-default_train_config = {
-	'epochs'             : 50,
-	'gpu'                : 0,
-	'lr'                 : 1e-5,
-	'max_queue_size'     : 10,
-	'steps_per_epoch'    : 10000,
-	'use_multiprocessing': False,
-	'weights'            : 'imagenet',
-	'workers'            : 1,
-}
-
-
-default_training_config = {
-	'backbone' : default_backbone_config,
-	'callbacks': default_callbacks_config,
-	'generator': default_generator_config,
-	'submodels': default_submodels_config,
-	'train'    : default_train_config,
-}
 
 
 def make_training_config(args):
@@ -190,24 +136,6 @@ def make_training_config(args):
 	return config
 
 
-default_eval_config = {
-	'convert_model'  : False,
-	'gpu'            : 0,
-	'iou_threshold'  : 0.5,
-	'max_detections' : 100,
-	'score_threshold': 0.05,
-	'weights'        : None,
-}
-
-
-default_evaluation_config = {
-	'backbone' : default_backbone_config,
-	'generator': default_generator_config,
-	'submodels': default_submodels_config,
-	'evaluate' : default_eval_config,
-}
-
-
 def make_evaluation_config(args):
 	# Parse the configuration file.
 	config = {}
@@ -243,20 +171,6 @@ def make_evaluation_config(args):
 		config['evaluate']['max_detections'] = args.max_detections
 
 	return config
-
-
-default_convert_config = {
-	'class_specific_filter': True,
-	'nms'                  : True,
-}
-
-
-default_conversion_config = {
-	'backbone' : default_backbone_config,
-	'generator': default_generator_config,
-	'submodels': default_submodels_config,
-	'convert'  : default_convert_config,
-}
 
 
 def make_conversion_config(args):
