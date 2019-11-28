@@ -175,8 +175,7 @@ def make_evaluation_config(args):
 
 def make_conversion_config(args):
 	# Parse the configuration file.
-	if config is None:
-		config = {}
+	config = {}
 	if args.config:
 		config = parse_yaml(args.config)
 	config = set_defaults(config, default_conversion_config)
