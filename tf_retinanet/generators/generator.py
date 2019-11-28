@@ -43,7 +43,8 @@ class Generator(tf.keras.utils.Sequence):
 
 	def __init__(
 		self,
-		transform_generator = None,
+		transform_generator=None,
+		visual_effect_generator=None,
 		batch_size=1,
 		group_method='ratio',  # one of 'none', 'random', 'ratio'
 		shuffle_groups=True,
@@ -70,16 +71,17 @@ class Generator(tf.keras.utils.Sequence):
 			preprocess_image       : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
 			anchors_config         : Configuration for anchors.
 		"""
-		self.transform_generator    = transform_generator
-		self.batch_size             = int(batch_size)
-		self.group_method           = group_method
-		self.shuffle_groups         = shuffle_groups
-		self.image_min_side         = image_min_side
-		self.image_max_side         = image_max_side
-		self.transform_parameters   = transform_parameters or TransformParameters()
-		self.compute_anchor_targets = compute_anchor_targets
-		self.compute_shapes         = compute_shapes
-		self.preprocess_image       = preprocess_image
+		self.transform_generator     = transform_generator
+		self.visual_effect_generator = visual_effect_generator
+		self.batch_size              = int(batch_size)
+		self.group_method            = group_method
+		self.shuffle_groups          = shuffle_groups
+		self.image_min_side          = image_min_side
+		self.image_max_side          = image_max_side
+		self.transform_parameters    = transform_parameters or TransformParameters()
+		self.compute_anchor_targets  = compute_anchor_targets
+		self.compute_shapes          = compute_shapes
+		self.preprocess_image        = preprocess_image
 		self.anchor_params = None
 
 		if anchors_config:
@@ -195,6 +197,31 @@ class Generator(tf.keras.utils.Sequence):
 				))
 				for k in annotations_group[index].keys():
 					annotations_group[index][k] = np.delete(annotations[k], invalid_indices, axis=0)
+
+		return image_group, annotations_group
+
+	def random_visual_effect_group_entry(self, image, annotations):
+		""" Randomly transforms image and annotation.
+		"""
+		visual_effect = next(self.visual_effect_generator)
+		# apply visual effect
+		image = visual_effect(image)
+		return image, annotations
+
+	def random_visual_effect_group(self, image_group, annotations_group):
+		""" Randomly apply visual effect on each image.
+		"""
+		assert(len(image_group) == len(annotations_group))
+
+		if self.visual_effect_generator is None:
+			# do nothing
+			return image_group, annotations_group
+
+		for index in range(len(image_group)):
+			# apply effect on a single group entry
+			image_group[index], annotations_group[index] = self.random_visual_effect_group_entry(
+				image_group[index], annotations_group[index]
+			)
 
 		return image_group, annotations_group
 
@@ -325,6 +352,9 @@ class Generator(tf.keras.utils.Sequence):
 
 		# Check validity of annotations.
 		image_group, annotations_group = self.filter_annotations(image_group, annotations_group, group)
+
+		# Randomly apply visual effect.
+		image_group, annotations_group = self.random_visual_effect_group(image_group, annotations_group)
 
 		# Randomly transform data.
 		image_group, annotations_group = self.random_transform_group(image_group, annotations_group)
