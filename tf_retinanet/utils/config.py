@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import dill
 import yaml
 import os
 import operator
@@ -36,16 +37,25 @@ def parse_yaml(path):
 			raise(exc)
 
 
+def clean_dict(config):
+	for key, value in config.items():
+		if isinstance(value, collections.abc.Mapping):
+			config[key] = clean_dict(config[key])
+		else:
+			if not dill.pickles(value):
+				config[key] = type(value)
+
+	return config
+
+
 def dump_yaml(config):
-	print('CONFIG generator: ', config['generator'])
+	config = clean_dict(config)
 	with open(os.path.join(
 		config['callbacks']['snapshots_path'],
 		config['callbacks']['project_name'],
 		'config.yaml'
 	), 'w') as dump_config:
-		for key, value in config['generator']['details'].items():
-			yaml.dump(value, dump_config, default_flow_style=False)
-			print('SUCCESS with key: ', key)
+		yaml.dump(config, dump_config, default_flow_style=False)
 
 
 def set_defaults(config, default_config):
