@@ -103,14 +103,15 @@ class Generator(tf.keras.utils.Sequence):
 		"""
 		Generator.__init__(
 			self,
-			transform_generator    = config['transform_generator'],
-			batch_size             = config['batch_size'],
-			group_method           = config['group_method'],
-			shuffle_groups         = config['shuffle_groups'],
-			image_min_side         = config['image_min_side'],
-			transform_parameters   = config['transform_parameters'],
-			anchors_config         = config['anchors'],
-			preprocess_image       = preprocess_image
+			transform_generator     = config['transform_generator_class'],
+			visual_effect_generator = config['visual_effect_generator_class'],
+			batch_size              = config['batch_size'],
+			group_method            = config['group_method'],
+			shuffle_groups          = config['shuffle_groups'],
+			image_min_side          = config['image_min_side'],
+			transform_parameters    = config['transform_parameters_class'],
+			anchors_config          = config['anchors'],
+			preprocess_image        = preprocess_image
 		)
 
 	def on_epoch_end(self):
