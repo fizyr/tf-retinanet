@@ -35,15 +35,23 @@ default_callbacks_config = {
 
 default_generator_config = {
 	'details': {
-		'anchors'                : {},
+		'anchors' : {
+			'sizes'  : [32, 64, 128, 256, 512],
+			'strides': [8, 16, 32, 64, 128],
+			'ratios' : [0.5, 1, 2],
+			'scales' : [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)],
+		},
 		'batch_size'             : 1,
-		'group_method'           : 'ratio',  # one of 'none', 'random', 'ratio'
+		'group_method'           : 'ratio',  # None 'random', 'ratio'
 		'image_min_side'         : 800,
 		'image_max_side'         : 1333,
 		'shuffle_groups'         : True,
-		'transform_generator'    : None,
-		'transform_parameters'   : None,
-		'visual_effect_generator': None,
+		'transform_generator'    : None,     # None, 'basic', 'random'
+		'transform_parameters'   : None,     # None or 'standard'
+		'visual_effect_generator': None,     # None or 'random'
+		'train_set_name'         : None,
+		'validation_set_name'    : None,
+		'test_set_name'          : None,
 	}
 }
 
