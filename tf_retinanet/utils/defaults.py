@@ -52,6 +52,7 @@ default_generator_config = {
 		'transform_generator'    : None,     # None, 'basic', 'random'
 		'transform_parameters'   : None,     # None or 'standard'
 		'visual_effect_generator': None,     # None or 'random'
+		'data_dir'               : None,
 		'train_set_name'         : None,
 		'validation_set_name'    : None,
 		'test_set_name'          : None,

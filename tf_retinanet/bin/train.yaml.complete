@@ -5,6 +5,17 @@ backbone:
     weights: imagenet
     freeze: false
 
+callbacks:
+  snapshot_path: /srv/weights/
+  project_name: tf_retinanet
+
+submodels:
+  retinanet:
+    - category: default_regression
+      name: bbox_regression
+    - category: default_classification
+      name: classification
+
 generator:
   name: coco
   details:
@@ -12,9 +23,14 @@ generator:
     train_set_name: train2017
     validation_set_name: val2017
     test_set_name: val2017
-    transform_generator: random
-    visual_effect_generator: none
-    batch_size: 2
+    batch_size: 1
+    group_method: ratio  # null, random or ratio
+    image_min_side: 800
+    image_max_side: 1333
+    shuffle_groups: true
+    transform_generator: null      # null, basic or random
+    transform_parameters: null     # null or standard
+    visual_effect_generator: null  # null or random
     anchors:
       sizes:
         - 32
@@ -37,15 +53,12 @@ generator:
         - 1.2599210498948732
         - 1.5874010519681994
 
-callbacks:
-  snapshots_path:
-  project_name:
-
 train:
+  epochs: 50
   steps_per_epoch: 10000
-  epochs: 100
+  lr: 1e-5
   use_multiprocessing: false
   workers: 1
   max_queue_size: 10
-  gpu: 1
-  lr: 1e-5
+  weights: imagenet
+  gpu: 0
