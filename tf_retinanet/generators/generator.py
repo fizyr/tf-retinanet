@@ -59,17 +59,18 @@ class Generator(tf.keras.utils.Sequence):
 		""" Initialize Generator object.
 
 		Args
-			transform_generator    : A generator used to randomly transform images and annotations.
-			batch_size             : The size of the batches to generate.
-			group_method           : Determines how images are grouped together (defaults to 'ratio', one of ('none', 'random', 'ratio')).
-			shuffle_groups         : If True, shuffles the groups each epoch.
-			image_min_side         : After resizing the minimum side of an image is equal to image_min_side.
-			image_max_side         : If after resizing the maximum side is larger than image_max_side, scales down further so that the max side is equal to image_max_side.
-			transform_parameters   : The transform parameters used for data augmentation.
-			compute_anchor_targets : Function handler for computing the targets of anchors for an image and its annotations.
-			compute_shapes         : Function handler for computing the shapes of the pyramid for a given input.
-			preprocess_image       : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
-			anchors_config         : Configuration for anchors.
+			transform_generator     : A generator used to randomly geometrically transform images and annotations.
+			visual_effect_generator : A generator used to randomly visually transform images and annotations.
+			batch_size              : The size of the batches to generate.
+			group_method            : Determines how images are grouped together (defaults to 'ratio', one of ('none', 'random', 'ratio')).
+			shuffle_groups          : If True, shuffles the groups each epoch.
+			image_min_side          : After resizing the minimum side of an image is equal to image_min_side.
+			image_max_side          : If after resizing the maximum side is larger than image_max_side, scales down further so that the max side is equal to image_max_side.
+			transform_parameters    : The transform parameters used for data augmentation.
+			compute_anchor_targets  : Function handler for computing the targets of anchors for an image and its annotations.
+			compute_shapes          : Function handler for computing the shapes of the pyramid for a given input.
+			preprocess_image        : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
+			anchors_config          : Configuration for anchors.
 		"""
 		self.transform_generator     = transform_generator
 		self.visual_effect_generator = visual_effect_generator

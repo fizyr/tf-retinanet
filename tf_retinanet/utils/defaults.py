@@ -33,16 +33,19 @@ default_callbacks_config = {
 }
 
 
+default_anchors_config = {
+	'sizes'  : [32, 64, 128, 256, 512],
+	'strides': [8, 16, 32, 64, 128],
+	'ratios' : [0.5, 1, 2],
+	'scales' : [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)],
+}
+
+
 default_generator_config = {
 	'details': {
-		'anchors' : {
-			'sizes'  : [32, 64, 128, 256, 512],
-			'strides': [8, 16, 32, 64, 128],
-			'ratios' : [0.5, 1, 2],
-			'scales' : [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)],
-		},
+		'anchors'                : default_anchors_config,
 		'batch_size'             : 1,
-		'group_method'           : 'ratio',  # None 'random', 'ratio'
+		'group_method'           : 'ratio',  # None, 'random', 'ratio'
 		'image_min_side'         : 800,
 		'image_max_side'         : 1333,
 		'shuffle_groups'         : True,
