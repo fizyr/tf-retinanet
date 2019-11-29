@@ -40,10 +40,11 @@ def check_training_model(model):
 		sys.exit(1)
 
 
-def build_anchors(anchor_parameters, features):
+def build_anchors(anchor_parameters, image, features):
 	""" Builds anchors for the shape of the features from FPN.
 	Args
 		anchor_parameters : Parameteres that determine how anchors are generated.
+		image             : The image input tensor.
 		features          : The FPN features.
 	Returns
 		A tensor containing the anchors for the FPN features.
@@ -59,7 +60,7 @@ def build_anchors(anchor_parameters, features):
 			ratios=anchor_parameters.ratios,
 			scales=anchor_parameters.scales,
 			name='anchors_{}'.format(i)
-		)(f) for i, f in enumerate(features)
+		)([image, f]) for i, f in enumerate(features)
 	]
 
 	return tf.keras.layers.Concatenate(axis=1, name='anchors')(anchors)
@@ -153,7 +154,7 @@ def retinanet_bbox(
 
 	# Compute the anchors.
 	features = [model.get_layer(p_name).output for p_name in ['P3', 'P4', 'P5', 'P6', 'P7']]
-	anchors = build_anchors(anchor_params, features)
+	anchors = build_anchors(anchor_params, model.inputs[0], features)
 
 	# We expect the anchors, regression and classification values as first output.
 	regression     = model.outputs[0]
