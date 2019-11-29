@@ -17,7 +17,8 @@ limitations under the License.
 import numpy as np
 import tensorflow as tf
 
-from ..utils.compute_overlap import compute_overlap
+from .compute_overlap import compute_overlap
+from .defaults import default_anchors_config
 
 
 class AnchorParameters:
@@ -43,10 +44,10 @@ class AnchorParameters:
 The default anchor parameters.
 """
 AnchorParameters.default = AnchorParameters(
-	sizes   = [32, 64, 128, 256, 512],
-	strides = [8, 16, 32, 64, 128],
-	ratios  = np.array([0.5, 1, 2], tf.keras.backend.floatx()),
-	scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], tf.keras.backend.floatx()),
+	sizes   = default_anchors_config['sizes'],
+	strides = default_anchors_config['strides'],
+	ratios  = np.array(default_anchors_config['ratios'], tf.keras.backend.floatx()),
+	scales  = np.array(default_anchors_config['scales'], tf.keras.backend.floatx()),
 )
 
 
@@ -346,4 +347,5 @@ def parse_anchor_parameters(anchors_config):
 	scales  = np.array(anchors_config['scales'], tf.keras.backend.floatx())
 	sizes   = anchors_config['sizes']
 	strides = anchors_config['strides']
+
 	return AnchorParameters(sizes, strides, ratios, scales)

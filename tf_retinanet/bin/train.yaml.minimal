@@ -1,0 +1,7 @@
+backbone:
+  name: legacy_resnet
+  details:
+    type: resnet50
+
+generator:
+  name: coco

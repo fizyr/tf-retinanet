@@ -14,10 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import dill
 import yaml
 import os
 import operator
 from functools import reduce
+import collections.abc
+
+from .defaults import (
+		default_training_config,
+		default_evaluation_config,
+		default_conversion_config
+		)
 
 
 def parse_yaml(path):
@@ -29,13 +37,36 @@ def parse_yaml(path):
 			raise(exc)
 
 
+def clean_dict(config):
+	for key, value in config.items():
+		if isinstance(value, collections.abc.Mapping):
+			config[key] = clean_dict(config[key])
+		else:
+			if not dill.pickles(value):
+				config[key] = type(value)
+
+	return config
+
+
 def dump_yaml(config):
+	config = clean_dict(config)
 	with open(os.path.join(
 		config['callbacks']['snapshots_path'],
 		config['callbacks']['project_name'],
 		'config.yaml'
 	), 'w') as dump_config:
 		yaml.dump(config, dump_config, default_flow_style=False)
+
+
+def set_defaults(config, default_config):
+	merged_dict = default_config
+	for key, value in config.items():
+		if isinstance(value, collections.abc.Mapping):
+			merged_dict[key] = set_defaults(value, merged_dict.get(key, {}))
+		else:
+			merged_dict[key] = value
+
+	return merged_dict
 
 
 def get_drom_dict(datadict, maplist):
@@ -56,81 +87,12 @@ def parse_additional_options(config, options):
 	return config
 
 
-def set_backbone_defaults(config):
-	if 'backbone' not in config:
-		config['backbone'] = {}
-	if 'details' not in config['backbone']:
-		config['backbone']['details'] = {}
-
-	return config
-
-
-def set_generator_defaults(config):
-	if 'generator' not in config:
-		config['generator'] = {}
-	if 'details' not in config['generator']:
-		config['generator']['details'] = {}
-
-	return config
-
-
-def set_submdodels_defaults(config):
-	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'retinanet' not in config['submodels']:
-		config['submodels']['retinanet'] = []
-	if not config['submodels']['retinanet']:
-		config['submodels']['retinanet'].append({'type': 'default_regression',     'name': 'bbox_regression'})
-		config['submodels']['retinanet'].append({'type': 'default_classification', 'name': 'classification'})
-
-	return config
-
-
-def set_training_defaults(config):
-	config = set_backbone_defaults(config)
-	config = set_generator_defaults(config)
-	config = set_submdodels_defaults(config)
-
-	# Set defaults for callbacks config.
-	if 'callbacks' not in config:
-		config['callbacks'] = {}
-	if ('snapshots_path' not in config['callbacks']) or (not config['callbacks']['snapshots_path']):
-		from pathlib import Path
-		home = str(Path.home())
-		config['callbacks']['snapshots_path'] = os.path.join(home, 'retinanet-snapshots')
-	if ('project_name' not in config['callbacks']) or (not config['callbacks']['project_name']):
-		from datetime import datetime
-		config['callbacks']['project_name'] = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-
-	# Set defaults for train config.
-	if 'train' not in config:
-		config['train'] = {}
-	if 'steps_per_epoch' not in config['train']:
-		config['train']['steps_per_epoch'] = 10000
-	if 'epochs' not in config['train']:
-		config['train']['epochs'] = 50
-	if 'use_multiprocessing' not in config['train']:
-		config['train']['use_multiprocessing'] = False
-	if 'workers' not in config['train']:
-		config['train']['workers'] = 1
-	if 'max_queue_size' not in config['train']:
-		config['train']['max_queue_size'] = 10
-	if 'gpu' not in config['train']:
-		config['train']['gpu'] = 0
-	if 'lr' not in config['train']:
-		config['train']['lr'] = 1e-5
-	if 'weights' not in config['train']:
-		config['train']['weights'] = None
-
-	return config
-
-
 def make_training_config(args):
 	# Parse the configuration file.
 	config = {}
 	if args.config:
 		config = parse_yaml(args.config)
-	config = set_training_defaults(config)
+	config = set_defaults(config, default_training_config)
 
 	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
@@ -184,36 +146,12 @@ def make_training_config(args):
 	return config
 
 
-def set_evaluation_defaults(config):
-	config = set_backbone_defaults(config)
-	config = set_generator_defaults(config)
-	config = set_submdodels_defaults(config)
-
-	# Set defaults for evaluate config.
-	if 'evaluate' not in config:
-		config['evaluate'] = {}
-	if 'convert_model' not in config['evaluate']:
-		config['evaluate']['convert_model'] = False
-	if 'gpu' not in config['evaluate']:
-		config['evaluate']['gpu'] = 0
-	if 'score_threshold' not in config['evaluate']:
-		config['evaluate']['score_threshold'] = 0.05
-	if 'iou_threshold' not in config['evaluate']:
-		config['evaluate']['iou_threshold'] = 0.5
-	if 'max_detections' not in config['evaluate']:
-		config['evaluate']['max_detections'] = 100
-	if 'weights' not in config['evaluate']:
-		config['evaluate']['weights'] = None
-
-	return config
-
-
 def make_evaluation_config(args):
 	# Parse the configuration file.
 	config = {}
 	if args.config:
 		config = parse_yaml(args.config)
-	config = set_evaluation_defaults(config)
+	config = set_defaults(config, default_evaluation_config)
 
 	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
@@ -245,29 +183,12 @@ def make_evaluation_config(args):
 	return config
 
 
-def set_conversion_defaults(config):
-	config = set_backbone_defaults(config)
-	config = set_generator_defaults(config)
-	config = set_submdodels_defaults(config)
-
-	# Set the defaults for conversion config.
-	if 'convert' not in config:
-		config['convert'] = {}
-	if 'nms' not in config['convert']:
-		config['convert']['nms'] = True
-	if 'class_specific_filter' not in config['convert']:
-		config['convert']['class_specific_filter'] = True
-
-	return config
-
-
 def make_conversion_config(args):
 	# Parse the configuration file.
-	if config is None:
-		config = {}
+	config = {}
 	if args.config:
 		config = parse_yaml(args.config)
-	config = set_conversion_defaults(config)
+	config = set_defaults(config, default_conversion_config)
 
 	# Additional config; start from this so it can be overwritten by the other command line options.
 	if args.o:
@@ -281,4 +202,3 @@ def make_conversion_config(args):
 	config['convert']['class_specific_filter'] = args.class_specific_filter
 
 	return config
-
