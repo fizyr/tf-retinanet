@@ -206,8 +206,10 @@ class Generator(tf.keras.utils.Sequence):
 		""" Randomly transforms image and annotation.
 		"""
 		visual_effect = next(self.visual_effect_generator)
+
 		# apply visual effect
 		image = visual_effect(image)
+
 		return image, annotations
 
 	def random_visual_effect_group(self, image_group, annotations_group):

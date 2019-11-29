@@ -6,7 +6,7 @@ backbone:
     freeze: false
 
 callbacks:
-  snapshot_path: /srv/weights/
+  snapshots_path: /srv/weights/
   project_name: tf_retinanet
 
 submodels:
