@@ -194,7 +194,8 @@ def get_generator(generators):
 		return generators['test']
 	if 'train' in generators:
 		return generators['train']
-	raise 'Could not call any generator.'
+
+	raise ValueError('Could not call any generator.')
 
 
 def main(args=None):

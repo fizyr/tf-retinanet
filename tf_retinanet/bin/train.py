@@ -104,7 +104,7 @@ def main(args=None):
 	)
 
 	if 'train' not in generators:
-		raise 'Could not get train generator.'
+		raise ValueError('Could not get train generator.')
 	train_generator = generators['train']
 	validation_generator = None
 	if 'validation' in generators:

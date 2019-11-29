@@ -45,7 +45,7 @@ def get_callbacks(
 	# Evaluate the model.
 	if validation_generator:
 		if not evaluation_callback:
-			raise('Standard evaluation_callback not implement yet.')
+			raise NotImplementedError('Standard evaluation_callback not implement yet.')
 		evaluation_callback = evaluation_callback(validation_generator)
 		evaluation_callback = RedirectModel(evaluation_callback, prediction_model)
 		callbacks.append(evaluation_callback)
