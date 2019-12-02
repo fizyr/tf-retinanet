@@ -27,6 +27,17 @@ def get_callbacks(
 	validation_generator=None,
 	evaluation_callback=None
 ):
+	""" Returns the callbacks indicated in the config.
+	Args
+		config              : Dictionary with indications about the callbacks.
+		model               : The used model.
+		prediction_model    : The used prediction model.
+		training_model      : The used training model.
+		validation_generator: Generator used during validation.
+		evaluation_callback : Callback used to perform evaluation.
+	Returns
+		The indicated callbacks.
+	"""
 	callbacks = []
 
 	# Save snapshots of the model.

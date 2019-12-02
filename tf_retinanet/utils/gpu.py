@@ -20,6 +20,10 @@ from .version import tf_version_ok
 
 
 def setup_gpu(gpu_id):
+	""" Configure the gpu with the given id.
+	Args
+		gpu_id : ID of the GPU to be used.
+	"""
 	if tf_version_ok((2, 0, 0)):
 		if gpu_id == 'cpu' or gpu_id == -1:
 			tf.config.experimental.set_visible_devices([], 'GPU')

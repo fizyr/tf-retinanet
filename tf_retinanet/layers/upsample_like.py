@@ -22,6 +22,10 @@ class UpsampleLike(tf.keras.layers.Layer):
 	"""
 
 	def call(self, inputs, **kwargs):
+		""" Upsamples the tensor.
+		Args
+			inputs : List of [source, target] tensors.
+		"""
 		source, target = inputs
 		target_shape = tf.keras.backend.shape(target)
 		if tf.keras.backend.image_data_format() == 'channels_first':
@@ -33,6 +37,12 @@ class UpsampleLike(tf.keras.layers.Layer):
 			return tf.image.resize(source, (target_shape[1], target_shape[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
 	def compute_output_shape(self, input_shape):
+		""" Computes the output shapes given the input shapes.
+		Args
+			input_shape : List of input shapes [boxes, classification, other[0], other[1], ...].
+		Returns
+			Tuple representing the output shapes.
+		"""
 		if tf.keras.backend.image_data_format() == 'channels_first':
 			return (input_shape[0][0], input_shape[0][1]) + input_shape[1][2:4]
 		else:

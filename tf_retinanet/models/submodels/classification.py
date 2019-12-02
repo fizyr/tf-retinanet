@@ -1,3 +1,19 @@
+"""
+Copyright 2017-2019 Fizyr (https://fizyr.com)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 from . import Submodel
 from ... import initializers
 from ...losses import focal
@@ -63,8 +79,8 @@ def default_classification_model(
 
 
 submodel_defaults = {
-	'name'       : 'classification',
-	'num_classes': 0
+	'name'        : 'classification',
+	'num_classes' : 0
 }
 
 
@@ -74,11 +90,11 @@ class ClassificationSubmodel(Submodel):
 	def __init__(self, config, **kwargs):
 		""" Constructor for classification submodel.
 		Args
-			config: Defines the configuration of the submodel.
-					It should contain:
-						name       : the name of the submodel
-						num_classes: number of classes to classify
-					If not specified, default values indicated above will be used.
+			config : Defines the configuration of the submodel.
+					 It should contain:
+						name        : The name of the submodel.
+						num_classes : Number of classes to classify.
+					 If not specified, default values indicated above will be used.
 		"""
 		config = set_defaults(config, submodel_defaults)
 

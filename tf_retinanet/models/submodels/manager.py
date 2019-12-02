@@ -13,13 +13,18 @@ limitations under the License.
 
 from ...utils import import_package
 
+
 class SubmodelsManager(object):
 	""" Class that parses submodels from configuration and creates them.
 	"""
 	def __init__(self, config):
 		""" Initialize the manager.
 		Args:
-			config: configuration dictionary.
+			config : configuration dictionary.
+					 It should contain a list of submodels, each of which should be a dictionary containing:
+						category : The category of submodel to be parsed (bbox_regression, classification, etc.).
+						details  : A dictionary with details about the submodel. Refer to each submodel class for more info.
+					 If not specified, default classification and bbox regression will be used.
 		"""
 		self.classification       = None
 		self.regression           = None
@@ -27,6 +32,7 @@ class SubmodelsManager(object):
 
 		# Loop through the specified submodels.
 		for submodel in config['retinanet']:
+			# Add details key, if not specified. Each submodel will fill it with its defaults.
 			if 'details' not in submodel:
 				submodel['details'] = {}
 
@@ -42,9 +48,10 @@ class SubmodelsManager(object):
 				self.classification = submodel
 				continue
 			else:
+				# Parse submodels from external package.
 				submodel_package  = import_package(submodel['category'], 'tf_retinanet_submodels')
 				submodel['class'] = submodel_package.parse_submodel(submodel['details'])
-				# If the submodel is indicated as main, set it in the local submodels.
+				# If the submodel is indicated as main, set it as such in the local submodels.
 				if 'main_classification' in submodel and submodel['main_classification']:
 					self.classification = submodel
 					continue
@@ -59,9 +66,8 @@ class SubmodelsManager(object):
 		if not self.regression:
 			raise ValueError("Could not find main regression submodel.")
 
-
 	def create(self, num_classes=None):
-		""" Create the submodels that were provided.
+		""" Initialize the submodels classes that were provided.
 		Args:
 			num_classes: number of classification classes.
 		"""

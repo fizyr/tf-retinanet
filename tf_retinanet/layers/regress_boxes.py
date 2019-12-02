@@ -50,13 +50,27 @@ class RegressBoxes(tf.keras.layers.Layer):
 		super(RegressBoxes, self).__init__(*args, **kwargs)
 
 	def call(self, inputs, **kwargs):
+		""" Transforms the anchors with the given regression.
+		Args
+			inputs : List of [anchors, regression] tensors.
+		"""
 		anchors, regression = inputs
 		return backend.bbox_transform_inv(anchors, regression, mean=self.mean, std=self.std)
 
 	def compute_output_shape(self, input_shape):
+		""" Computes the output shapes given the input shapes.
+		Args
+			input_shape : List of input shapes [boxes, classification, other[0], other[1], ...].
+		Returns
+			Tuple representing the output shapes.
+		"""
 		return input_shape[0]
 
 	def get_config(self):
+		""" Gets the configuration of this layer.
+		Returns
+			Dictionary containing the parameters of this layer.
+		"""
 		config = super(RegressBoxes, self).get_config()
 		config.update({
 			'mean': self.mean.tolist(),

@@ -29,9 +29,7 @@ assert(callable(progressbar.progressbar)), "Using wrong progressbar module, inst
 
 def _compute_ap(recall, precision):
 	""" Compute the average precision, given the recall and precision curves.
-
 	Code originally from https://github.com/rbgirshick/py-faster-rcnn.
-
 	# Arguments
 		recall:    The recall curve (list).
 		precision: The precision curve (list).
@@ -58,10 +56,8 @@ def _compute_ap(recall, precision):
 
 def _get_detections(generator, model, score_threshold=0.05, max_detections=100, save_path=None):
 	""" Get the detections from the model using the generator.
-
 	The result is a list of lists such that the size is:
 		all_detections[num_images][num_classes] = detections[num_detections, 4 + num_classes]
-
 	# Arguments
 		generator       : The generator used to run images through the model.
 		model           : The model to run on the images.
@@ -125,10 +121,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
 def _get_annotations(generator):
 	""" Get the ground truth annotations from the generator.
-
 	The result is a list of lists such that the size is:
 		all_detections[num_images][num_classes] = annotations[num_detections, 5]
-
 	# Arguments
 		generator : The generator used to retrieve ground truth annotations.
 	# Returns
@@ -152,7 +146,6 @@ def _get_annotations(generator):
 
 def print_results(generator, average_precisions, inference_time):
 	""" Print evaluation results.
-
 	# Arguments
 		generator         : The generator that represents the dataset to evaluate.
 		average_precision : Average precisions per label.
@@ -185,7 +178,6 @@ def evaluate(
 	save_path=None
 ):
 	""" Evaluate a given dataset using a given model.
-
 	# Arguments
 		generator       : The generator that represents the dataset to evaluate.
 		model           : The model to evaluate.

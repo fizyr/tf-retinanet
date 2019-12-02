@@ -20,7 +20,8 @@ DEFAULT_PRNG = np.random
 
 
 def colvec(*args):
-	""" Create a numpy array representing a column vector. """
+	""" Create a numpy array representing a column vector.
+	"""
 	return np.array([args]).T
 
 

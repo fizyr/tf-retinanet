@@ -115,6 +115,8 @@ class Generator(tf.keras.utils.Sequence):
 		)
 
 	def on_epoch_end(self):
+		""" If indicated, shuffles the groups at the end of the epoch.
+		"""
 		if self.shuffle_groups:
 			random.shuffle(self.groups)
 
@@ -328,6 +330,8 @@ class Generator(tf.keras.utils.Sequence):
 		return image_batch
 
 	def generate_anchors(self, image_shape):
+		""" Generates anchors for an indicated image shape.
+		"""
 		return anchors_for_shape(image_shape, anchor_params=self.anchor_params, shapes_callback=self.compute_shapes)
 
 	def compute_targets(self, image_group, annotations_group):
