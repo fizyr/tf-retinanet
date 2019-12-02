@@ -1,6 +1,7 @@
 from . import Submodel
 from ... import initializers
 from ...losses import focal
+from ...utils.config import set_defaults
 import tensorflow as tf
 
 
@@ -61,23 +62,31 @@ def default_classification_model(
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
+submodel_defaults = {
+	'name'       : 'classification',
+	'num_classes': 0
+}
+
+
 class ClassificationSubmodel(Submodel):
 	""" simple classification submodel, performing multi-class prediction.
 	"""
 	def __init__(self, config, **kwargs):
-		""" Constructor for "standard" classification submodel.
+		""" Constructor for classification submodel.
 		Args
-			config: Defines the configuration for the submodel.
-			TODO: list required info in config
+			config: Defines the configuration of the submodel.
+					It should contain:
+						name       : the name of the submodel
+						num_classes: number of classes to classify
+					If not specified, default values indicated above will be used.
 		"""
-		assert('num_classes' in config), "Number of classes not in config."
+		config = set_defaults(config, submodel_defaults)
 
-		if 'name' not in config:
-			config['name'] = 'classification'
-		self.name = config['name']
+		if config['num_classes'] < 1:
+			raise ValueError("Please indicate a positive number of classes for classification submodel.")
 
+		self.name        = config['name']
 		self.num_classes = config['num_classes']
-		assert(self.num_classes > 0), "No classes to classify."
 
 		super(ClassificationSubmodel, self).__init__()
 

@@ -1,6 +1,7 @@
 from . import Submodel
 from ...losses import smooth_l1
 import tensorflow as tf
+from ...utils.config import set_defaults
 
 
 def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name='regression_submodel'):
@@ -46,19 +47,24 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
+submodel_defaults = {
+	'name'  : 'bbox_regression',
+	'values': 4,
+}
+
 class BboxRegressionSubmodel(Submodel):
 	""" Simple bounding box regression submodel.
 	"""
 	def __init__(self, config, **kwargs):
-		""" Constructor for "simple" regression submodel.
+		""" Constructor for bbox regression submodel.
 		Args
-			config: Defines the configuration for the submodel.
+			config: Defines the configuration of the submodel.
+					It should contain:
+						name  : the name of the submodel
+						values: number of values to regress
+					If not specified, default values indicated above will be used.
 		"""
-		if 'name' not in config:
-			config['name'] = 'bbox_regression'
-		self.name = config['name']
-
-		self.values = 4
+		config = set_defaults(config, submodel_defaults)
 
 		super(BboxRegressionSubmodel, self).__init__()
 
