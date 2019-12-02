@@ -17,15 +17,20 @@ limitations under the License.
 import tensorflow as tf
 
 
-def shift(shape, stride, anchors):
-	""" Produce shifted anchors based on shape of the map and stride size.
+def shift(image_shape, features_shape, stride, anchors):
+	""" Produce shifted anchors based on shape of the image, shape of the feature map and stride.
 	Args
-		shape  : Shape to shift the anchors over.
-		stride : Stride to shift the anchors with over the shape.
-		anchors: The anchors to apply at each location.
+		image_shape   : Shape of the input image.
+		features_shape: Shape of the feature map.
+		stride        : Stride to shift the anchors with over the shape.
+		anchors       : The anchors to apply at each location.
 	"""
-	shift_x = (tf.keras.backend.arange(0, shape[1], dtype=tf.keras.backend.floatx()) + tf.keras.backend.constant(0.5, dtype=tf.keras.backend.floatx())) * stride
-	shift_y = (tf.keras.backend.arange(0, shape[0], dtype=tf.keras.backend.floatx()) + tf.keras.backend.constant(0.5, dtype=tf.keras.backend.floatx())) * stride
+	# Compute the offset of the anchors based on the image shape and the feature map shape.
+	offset_x = tf.keras.backend.cast((image_shape[1] - (features_shape[1] - 1) * stride), tf.keras.backend.floatx()) / 2.0
+	offset_y = tf.keras.backend.cast((image_shape[0] - (features_shape[0] - 1) * stride), tf.keras.backend.floatx()) / 2.0
+
+	shift_x = tf.keras.backend.arange(0, features_shape[1], dtype=tf.keras.backend.floatx()) * stride + offset_x
+	shift_y = tf.keras.backend.arange(0, features_shape[0], dtype=tf.keras.backend.floatx()) * stride + offset_y
 
 	shift_x, shift_y = tf.meshgrid(shift_x, shift_y)
 	shift_x = tf.keras.backend.reshape(shift_x, [-1])
