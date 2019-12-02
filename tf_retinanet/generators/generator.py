@@ -57,7 +57,6 @@ class Generator(tf.keras.utils.Sequence):
 		anchors_config=None
 	):
 		""" Initialize Generator object.
-
 		Args
 			transform_generator     : A generator used to randomly geometrically transform images and annotations.
 			visual_effect_generator : A generator used to randomly visually transform images and annotations.

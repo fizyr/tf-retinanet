@@ -26,7 +26,7 @@ class SubmodelsManager(object):
 		self.additional_submodels = []
 
 		# Loop through the specified submodels.
-		for submodel in config['submodels']['retinanet']:
+		for submodel in config['retinanet']:
 			if 'details' not in submodel:
 				submodel['details'] = {}
 

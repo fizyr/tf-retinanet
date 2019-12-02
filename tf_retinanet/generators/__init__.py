@@ -64,10 +64,10 @@ def preprocess_config(config):
 
 
 def get_generators(config, submodels_manager, preprocess_image, **kwargs):
-	generator_pkg = import_package(config['generator']['name'], 'tf_retinanet_generators')
+	generator_pkg = import_package(config['name'], 'tf_retinanet_generators')
 
 	return generator_pkg.from_config(
-		preprocess_config(config['generator']['details']),
+		preprocess_config(config['details']),
 		submodels_manager,
 		preprocess_image,
 		**kwargs

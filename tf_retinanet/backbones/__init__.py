@@ -62,6 +62,12 @@ class Backbone(object):
 
 
 def get_backbone(config):
-	backbone_pkg = import_package(config['backbone']['name'], 'tf_retinanet_backbones')
+	""" Imports a backbone from an external package.
+	Args
+		config: Dictionary containing name and details for importing the backbone.
+	Returns
+		The specified backbone.
+	"""
+	backbone_pkg = import_package(config['name'], 'tf_retinanet_backbones')
 
-	return backbone_pkg.from_config(config['backbone']['details'])
+	return backbone_pkg.from_config(config['details'])
