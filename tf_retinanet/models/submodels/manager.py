@@ -78,47 +78,48 @@ class SubmodelsManager(object):
 		if num_classes:
 			self.classification['details']['num_classes'] = num_classes
 
-		# Instantiate main regression and classification submodels.
+		# Initialize main regression and classification submodels.
 		self.regression     = self.regression['class'](self.regression['details'])
 		self.classification = self.classification['class'](self.classification['details'])
 
-		# Instantiate and append all provided submodels.
+		# Initialize and append all provided submodels.
 		self.submodels = []
 		self.submodels.append(self.regression)
 		self.submodels.append(self.classification)
 		for submodel in self.additional_submodels:
 			self.submodels.append(submodel['class'](submodel['details']))
 
-
 	def get_submodels(self):
 		""" Return the submodels.
 		"""
 		return self.submodels
 
-
 	def get_evaluation(self):
-		""" Get evaluation procedure from submodels.
+		""" Get evaluation procedure from submodels, or use default.
 		"""
-		evaluation = None
+		evaluations = []
 		for submodel in self.submodels:
-			evaluation = submodel.get_evaluation()
+			evaluations.append(submodel.get_evaluation()) if submodel.get_evaluation() is not None else []
 
-		if not evaluation:
+		assert (len(evaluations) < 2), "More than one evaluation procedure has been provided."
+
+		if evaluations:
+			return evaluations[0]
+		else:
 			from ...utils.eval import evaluate
-			evaluation = evaluate
-
-		return evaluation
-
+			return evaluate
 
 	def get_evaluation_callback(self):
-		""" Get evaluation callback from submodels.
+		""" Get evaluation callback from submodels, or use default.
 		"""
-		callback = None
+		callbacks = []
 		for submodel in self.submodels:
-			callback = submodel.get_evaluation_callback()
+			callbacks.append(submodel.get_evaluation_callback()) if submodel.get_evaluation_callback() is not None else []
 
-		if not callback:
+		assert (len(callbacks) < 2), "More than one evaluation callback has been provided."
+
+		if callbacks:
+			return callbacks[0]
+		else:
 			from ...callbacks.eval import Evaluate
-			callback = Evaluate
-
-		return callback
+			return Evaluate
