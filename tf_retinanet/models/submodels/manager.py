@@ -36,8 +36,10 @@ class SubmodelsManager(object):
 			if 'details' not in submodel:
 				submodel['details'] = {}
 
-			# Parse the default submodels.
-			if submodel['category'] == 'default_regression':
+			# Parse the submodels.
+			if 'category' not in submodel:
+				raise ValueError("A submodel category was not specified.")
+			elif submodel['category'] == 'default_regression':
 				from .regression import BboxRegressionSubmodel
 				submodel['class'] = BboxRegressionSubmodel
 				self.regression = submodel
