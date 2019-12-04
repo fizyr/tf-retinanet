@@ -216,7 +216,7 @@ def main(args=None):
 	# Get the backbone.
 	backbone = get_backbone(config['backbone'])
 
-	# Get the generators.
+	# Get generators and submodels.
 	generators, submodels = get_generators(
 		config['generator'],
 		submodels_manager,

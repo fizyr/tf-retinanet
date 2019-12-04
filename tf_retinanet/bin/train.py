@@ -103,15 +103,20 @@ def main(args=None):
 		preprocess_image=backbone.preprocess_image
 	)
 
+	# Get train generator.
 	if 'train' not in generators:
 		raise ValueError('Could not get train generator.')
 	train_generator = generators['train']
+
+	# If provided, get validation generator.
 	validation_generator = None
 	if 'validation' in generators:
 		validation_generator = generators['validation']
+
+	# If provided, get evaluation callback.
 	evaluation_callback = None
-	if 'custom_evaluation_callback' in generators:
-		evaluation_callback = generators['custom_evaluation_callback']
+	if 'evaluation_callback' in generators:
+		evaluation_callback = generators['evaluation_callback']
 
 	# Create the model.
 	model = backbone.retinanet(submodels=submodels)
