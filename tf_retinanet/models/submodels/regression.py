@@ -64,8 +64,8 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 
 
 submodel_defaults = {
-	'name'   : 'bbox_regression',
-	'values' : 4,
+	'name'       : 'bbox_regression',
+	'num_values' : 4,
 }
 
 
@@ -77,11 +77,17 @@ class BboxRegressionSubmodel(Submodel):
 		Args
 			config : Defines the configuration of the submodel.
 					 It should contain:
-						name   : The name of the submodel.
-						values : Number of values to regress.
+						name       : The name of the submodel.
+						num_values : Number of values to regress.
 					 If not specified, default values indicated above will be used.
 		"""
 		config = set_defaults(config, submodel_defaults)
+
+		if config['num_values'] < 1:
+			raise ValueError("Please specify a positive number of values for regression submodel.")
+
+		self.name       = config['name']
+		self.num_values = config['num_values']
 
 		super(BboxRegressionSubmodel, self).__init__()
 
@@ -98,7 +104,7 @@ class BboxRegressionSubmodel(Submodel):
 	def size(self):
 		""" Number of regression values.
 		"""
-		return self.values
+		return self.num_values
 
 	def create(self, **kwargs):
 		""" Create a regression submodel.

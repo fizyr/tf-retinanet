@@ -24,7 +24,8 @@ import collections.abc
 from .defaults import (
 		default_training_config,
 		default_evaluation_config,
-		default_conversion_config
+		default_conversion_config,
+		default_debugging_config
 		)
 
 
@@ -240,5 +241,50 @@ def make_conversion_config(args):
 	# Convert config.
 	config['convert']['nms'] = args.nms
 	config['convert']['class_specific_filter'] = args.class_specific_filter
+
+	return config
+
+
+def make_debug_config(args):
+	""" Create debug config by parsing args from command line and YAML config file, filling the rest with default values.
+	Args
+		args: Arguments parsed from command line.
+	Returns
+		config : Dictionary containing debug configuration.
+	"""
+	# Parse the configuration file.
+	config = {}
+	if args.config:
+		config = parse_yaml(args.config)
+	config = set_defaults(config, default_debugging_config)
+
+	# Additional config; start from this so it can be overwritten by the other command line options.
+	if args.o:
+		config = parse_additional_options(config, args.o)
+
+	if args.backbone:
+		config['backbone']['name'] = args.backbone
+	if args.generator:
+		config['generator']['name'] = args.generator
+
+	# Generator config.
+	if args.random_transform:
+		config['generator']['details']['transform_generator'] = 'random'
+	if args.random_visual_effect:
+		config['generator']['details']['visual_effect_generator'] = 'random'
+	if args.image_min_side:
+		config['generator']['details']['image_min_side'] = args.image_min_side
+	if args.image_max_side:
+		config['generator']['details']['image_max_side'] = args.image_max_side
+
+	# Debug config.
+	if args.resize:
+		config['debug']['resize'] = args.resize
+	if args.anchors:
+		config['debug']['anchors'] = args.anchors
+	if args.display_name:
+		config['debug']['display_name'] = args.display_name
+	if args.annotations:
+		config['debug']['annotations'] = args.annotations
 
 	return config

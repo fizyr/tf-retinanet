@@ -82,8 +82,8 @@ class Generator(tf.keras.utils.Sequence):
 		self.compute_anchor_targets  = compute_anchor_targets
 		self.compute_shapes          = compute_shapes
 		self.preprocess_image        = preprocess_image
-		self.anchor_params = None
 
+		self.anchor_params = None
 		if anchors_config:
 			self.anchor_params = parse_anchor_parameters(anchors_config)
 
@@ -94,12 +94,17 @@ class Generator(tf.keras.utils.Sequence):
 		if self.shuffle_groups:
 			self.on_epoch_end()
 
-	def __from_config__(self, config, preprocess_image):
+	def __from_config__(
+		self,
+		config,
+		preprocess_image=preprocess_image,
+		compute_anchor_targets=anchor_targets_bbox
+	):
 		""" Initialize Generator object from a configuration.
-
 		Args
-			config           : Configuration for the generator.
-			preprocess_image : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
+			config                 : Configuration for the generator.
+			preprocess_image       : Function handler for preprocessing an image (scaling / normalizing) for passing through a network.
+			compute_anchor_targets : Function handler for computing the targets of anchors for an image and its annotations.
 		"""
 		Generator.__init__(
 			self,
@@ -111,7 +116,8 @@ class Generator(tf.keras.utils.Sequence):
 			image_min_side          = config['image_min_side'],
 			transform_parameters    = config['transform_parameters_class'],
 			anchors_config          = config['anchors'],
-			preprocess_image        = preprocess_image
+			preprocess_image        = preprocess_image,
+			compute_anchor_targets  = compute_anchor_targets
 		)
 
 	def on_epoch_end(self):

@@ -92,6 +92,14 @@ default_convert_config = {
 }
 
 
+default_debug_config = {
+	'resize'       : True,
+	'anchors'      : False,
+	'display_name' : False,
+	'annotations'  : False,
+}
+
+
 default_training_config = {
 	'backbone'  : default_backbone_config,
 	'callbacks' : default_callbacks_config,
@@ -114,4 +122,12 @@ default_conversion_config = {
 	'generator' : default_generator_config,
 	'submodels' : default_submodels_config,
 	'convert'   : default_convert_config,
+}
+
+
+default_debugging_config = {
+	'backbone'  : default_backbone_config,
+	'generator' : default_generator_config,
+	'submodels' : default_submodels_config,
+	'debug'     : default_debug_config,
 }

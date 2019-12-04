@@ -85,21 +85,22 @@ def main(args=None):
 	# Get the backbone.
 	backbone = get_backbone(config['backbone'])
 
-	# Get the generators.
+	# Get generators and submodels.
 	generators, submodels = get_generators(
 		config['generator'],
 		submodels_manager,
 		preprocess_image=backbone.preprocess_image
 	)
 
+	# Get test generator.
 	if 'test' not in generators:
 		raise ValueError('Could not get test generator.')
 	test_generator = generators['test']
 
-	evaluate = None
-	if 'custom_evaluation' not in generators:
+	# Get evaluation procedure.
+	if 'evaluation_procedure' not in generators:
 		raise ValueError('Evaluation not implement yet.')
-	evaluate = generators['custom_evaluation']
+	evaluate = generators['evaluation_procedure']
 
 	# Load model.
 	if config['evaluate']['weights'] is None:
@@ -114,9 +115,6 @@ def main(args=None):
 			anchor_params = parse_anchor_parameters(config['generator']['details']['anchors'])
 
 		model = models.retinanet.convert_model(model, anchor_params=anchor_params)
-
-	# Print model.
-	#print(model.summary())
 
 	if config['generator']['name'] == 'coco':
 		evaluation = evaluate(test_generator, model)

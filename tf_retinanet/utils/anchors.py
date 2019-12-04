@@ -331,7 +331,7 @@ def bbox_transform(anchors, gt_boxes, mean=None, std=None):
 
 
 def parse_anchor_parameters(anchors_config):
-	"""Parser anchors parameters from a dict.
+	""" Parse anchors parameters from a dict.
 	"""
 	ratios  = np.array(anchors_config['ratios'], tf.keras.backend.floatx())
 	scales  = np.array(anchors_config['scales'], tf.keras.backend.floatx())
