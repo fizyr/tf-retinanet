@@ -22,6 +22,10 @@ class ClipBoxes(tf.keras.layers.Layer):
 	"""
 
 	def call(self, inputs, **kwargs):
+		""" Clips the boxes.
+		Args
+			inputs : List of [image, boxes] tensors.
+		"""
 		image, boxes = inputs
 		shape = tf.keras.backend.cast(tf.keras.backend.shape(image), tf.keras.backend.floatx())
 		if tf.keras.backend.image_data_format() == 'channels_first':
@@ -38,4 +42,10 @@ class ClipBoxes(tf.keras.layers.Layer):
 		return tf.keras.backend.stack([x1, y1, x2, y2], axis=2)
 
 	def compute_output_shape(self, input_shape):
+		""" Computes the output shapes given the input shapes.
+		Args
+			input_shape : List of input shapes [boxes, classification, other[0], other[1], ...].
+		Returns
+			Tuple representing the output shapes:
+		"""
 		return input_shape[1]

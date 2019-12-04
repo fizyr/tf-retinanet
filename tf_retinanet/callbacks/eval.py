@@ -34,8 +34,7 @@ class Evaluate(tf.keras.callbacks.Callback):
 		verbose=1
 	):
 		""" Evaluate a given dataset using a given model at the end of every epoch during training.
-
-		# Arguments
+		Args
 			generator        : The generator that represents the dataset to evaluate.
 			iou_threshold    : The threshold used to consider when a detection is positive or negative.
 			score_threshold  : The score confidence threshold to use for detections.
@@ -57,6 +56,8 @@ class Evaluate(tf.keras.callbacks.Callback):
 		super(Evaluate, self).__init__()
 
 	def on_epoch_end(self, epoch, logs=None):
+		""" Run the evaluation callback at the end of a given epoch.
+		"""
 		logs = logs or {}
 
 		# Run evaluation.

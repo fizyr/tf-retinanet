@@ -13,25 +13,33 @@ limitations under the License.
 
 from ...utils import import_package
 
+
 class SubmodelsManager(object):
 	""" Class that parses submodels from configuration and creates them.
 	"""
 	def __init__(self, config):
 		""" Initialize the manager.
 		Args:
-			config: configuration dictionary.
+			config : configuration dictionary.
+					 It should contain a list of submodels, each of which should be a dictionary containing:
+						category : The category of submodel to be parsed (bbox_regression, classification, etc.).
+						details  : A dictionary with details about the submodel. Refer to each submodel class for more info.
+					 If not specified, default classification and bbox regression will be used.
 		"""
 		self.classification       = None
 		self.regression           = None
 		self.additional_submodels = []
 
 		# Loop through the specified submodels.
-		for submodel in config['submodels']['retinanet']:
+		for submodel in config['retinanet']:
+			# Add details key, if not specified. Each submodel will fill it with its defaults.
 			if 'details' not in submodel:
 				submodel['details'] = {}
 
-			# Parse the default submodels.
-			if submodel['category'] == 'default_regression':
+			# Parse the submodels.
+			if 'category' not in submodel:
+				raise ValueError("A submodel category was not specified.")
+			elif submodel['category'] == 'default_regression':
 				from .regression import BboxRegressionSubmodel
 				submodel['class'] = BboxRegressionSubmodel
 				self.regression = submodel
@@ -42,9 +50,10 @@ class SubmodelsManager(object):
 				self.classification = submodel
 				continue
 			else:
+				# Parse submodels from external package.
 				submodel_package  = import_package(submodel['category'], 'tf_retinanet_submodels')
 				submodel['class'] = submodel_package.parse_submodel(submodel['details'])
-				# If the submodel is indicated as main, set it in the local submodels.
+				# If the submodel is indicated as main, set it as such in the local submodels.
 				if 'main_classification' in submodel and submodel['main_classification']:
 					self.classification = submodel
 					continue
@@ -59,9 +68,8 @@ class SubmodelsManager(object):
 		if not self.regression:
 			raise ValueError("Could not find main regression submodel.")
 
-
 	def create(self, num_classes=None):
-		""" Create the submodels that were provided.
+		""" Initialize the submodels classes that were provided.
 		Args:
 			num_classes: number of classification classes.
 		"""
@@ -70,47 +78,48 @@ class SubmodelsManager(object):
 		if num_classes:
 			self.classification['details']['num_classes'] = num_classes
 
-		# Instantiate main regression and classification submodels.
+		# Initialize main regression and classification submodels.
 		self.regression     = self.regression['class'](self.regression['details'])
 		self.classification = self.classification['class'](self.classification['details'])
 
-		# Instantiate and append all provided submodels.
+		# Initialize and append all provided submodels.
 		self.submodels = []
 		self.submodels.append(self.regression)
 		self.submodels.append(self.classification)
 		for submodel in self.additional_submodels:
 			self.submodels.append(submodel['class'](submodel['details']))
 
-
 	def get_submodels(self):
 		""" Return the submodels.
 		"""
 		return self.submodels
 
-
 	def get_evaluation(self):
-		""" Get evaluation procedure from submodels.
+		""" Get evaluation procedure from submodels, or use default.
 		"""
-		evaluation = None
+		evaluations = []
 		for submodel in self.submodels:
-			evaluation = submodel.get_evaluation()
+			evaluations.append(submodel.get_evaluation()) if submodel.get_evaluation() is not None else []
 
-		if not evaluation:
+		assert (len(evaluations) < 2), "More than one evaluation procedure has been provided."
+
+		if evaluations:
+			return evaluations[0]
+		else:
 			from ...utils.eval import evaluate
-			evaluation = evaluate
-
-		return evaluation
-
+			return evaluate
 
 	def get_evaluation_callback(self):
-		""" Get evaluation callback from submodels.
+		""" Get evaluation callback from submodels, or use default.
 		"""
-		callback = None
+		callbacks = []
 		for submodel in self.submodels:
-			callback = submodel.get_evaluation_callback()
+			callbacks.append(submodel.get_evaluation_callback()) if submodel.get_evaluation_callback() is not None else []
 
-		if not callback:
+		assert (len(callbacks) < 2), "More than one evaluation callback has been provided."
+
+		if callbacks:
+			return callbacks[0]
+		else:
 			from ...callbacks.eval import Evaluate
-			callback = Evaluate
-
-		return callback
+			return Evaluate

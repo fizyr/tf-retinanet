@@ -60,7 +60,6 @@ def anchor_targets_bbox(
 	positive_overlap=0.5
 ):
 	""" Generate anchor targets for bbox detection.
-
 	Args
 		anchors: np.array of annotations of shape (N, 4) for (x1, y1, x2, y2).
 		image_group: List of BGR images.
@@ -69,7 +68,6 @@ def anchor_targets_bbox(
 		mask_shape: If the image is padded with zeros, mask_shape can be used to mark the relevant part of the image.
 		negative_overlap: IoU overlap for negative anchors (all anchors with overlap < negative_overlap are negative).
 		positive_overlap: IoU overlap or positive anchors (all anchors with overlap > positive_overlap are positive).
-
 	Returns
 		labels_batch: batch that contains labels & anchor states (np.array of shape (batch_size, N, num_classes + 1),
 					where N is the number of anchors for an image and the last column defines the anchor state (-1 for ignore, 0 for bg, 1 for fg).
@@ -77,7 +75,6 @@ def anchor_targets_bbox(
 					where N is the number of anchors for an image, the first 4 columns define regression targets for (x1, y1, x2, y2) and the
 					last column defines anchor states (-1 for ignore, 0 for bg, 1 for fg).
 	"""
-
 	assert(len(image_group) == len(annotations_group)), "The length of the images and annotations need to be equal."
 	assert(len(annotations_group) > 0), "No data received to compute anchor targets for."
 	for annotations in annotations_group:
@@ -124,19 +121,16 @@ def compute_gt_annotations(
 	positive_overlap=0.5
 ):
 	""" Obtain indices of gt annotations with the greatest overlap.
-
 	Args
 		anchors: np.array of annotations of shape (N, 4) for (x1, y1, x2, y2).
 		annotations: np.array of shape (N, 5) for (x1, y1, x2, y2, label).
 		negative_overlap: IoU overlap for negative anchors (all anchors with overlap < negative_overlap are negative).
 		positive_overlap: IoU overlap or positive anchors (all anchors with overlap > positive_overlap are positive).
-
 	Returns
 		positive_indices: indices of positive anchors
 		ignore_indices: indices of ignored anchors
 		argmax_overlaps_inds: ordered overlaps indices
 	"""
-
 	overlaps = compute_overlap(anchors.astype(np.float64), annotations.astype(np.float64))
 	argmax_overlaps_inds = np.argmax(overlaps, axis=1)
 	max_overlaps = overlaps[np.arange(overlaps.shape[0]), argmax_overlaps_inds]
@@ -150,11 +144,9 @@ def compute_gt_annotations(
 
 def layer_shapes(image_shape, model):
 	"""Compute layer shapes given input image shape and the model.
-
 	Args
 		image_shape: The shape of the image.
 		model: The model to use for computing how the image shape is transformed in the pyramid.
-
 	Returns
 		A dictionary mapping layer names to image shapes.
 	"""
@@ -186,11 +178,9 @@ def make_shapes_callback(model):
 
 def guess_shapes(image_shape, pyramid_levels):
 	"""Guess shapes based on pyramid levels.
-
 	Args
 		image_shape: The shape of the image.
 		pyramid_levels: A list of what pyramid levels are used.
-
 	Returns
 		A list of image shapes at each pyramid level.
 	"""
@@ -206,17 +196,14 @@ def anchors_for_shape(
 	shapes_callback=None,
 ):
 	""" Generators anchors for a given shape.
-
 	Args
 		image_shape: The shape of the image.
 		pyramid_levels: List of ints representing which pyramids to use (defaults to [3, 4, 5, 6, 7]).
 		anchor_params: Struct containing anchor parameters. If None, default values are used.
 		shapes_callback: Function to call for getting the shape of the image at different pyramid levels.
-
 	Returns
 		np.array of shape (N, 4) containing the (x1, y1, x2, y2) coordinates for the anchors.
 	"""
-
 	if pyramid_levels is None:
 		pyramid_levels = [3, 4, 5, 6, 7]
 
@@ -243,7 +230,6 @@ def anchors_for_shape(
 
 def shift(image_shape, features_shape, stride, anchors):
 	""" Produce shifted anchors based on shape of the image, shape of the feature map and stride.
-
 	Args
 		image_shape   : Shape of the input image.
 		features_shape: Shape of the feature map.
@@ -282,7 +268,6 @@ def generate_anchors(base_size=16, ratios=None, scales=None):
 	Generate anchor (reference) windows by enumerating aspect ratios X
 	scales w.r.t. a reference window.
 	"""
-
 	if ratios is None:
 		ratios = AnchorParameters.default.ratios
 
@@ -312,8 +297,8 @@ def generate_anchors(base_size=16, ratios=None, scales=None):
 
 
 def bbox_transform(anchors, gt_boxes, mean=None, std=None):
-	"""Compute bounding-box regression targets for an image."""
-
+	"""Compute bounding-box regression targets for an image.
+	"""
 	if mean is None:
 		mean = np.array([0, 0, 0, 0])
 	if std is None:
@@ -346,7 +331,8 @@ def bbox_transform(anchors, gt_boxes, mean=None, std=None):
 
 
 def parse_anchor_parameters(anchors_config):
-	"""Parser anchors parameters from a dict."""
+	"""Parser anchors parameters from a dict.
+	"""
 	ratios  = np.array(anchors_config['ratios'], tf.keras.backend.floatx())
 	scales  = np.array(anchors_config['scales'], tf.keras.backend.floatx())
 	sizes   = anchors_config['sizes']

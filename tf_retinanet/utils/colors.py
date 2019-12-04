@@ -19,13 +19,10 @@ import warnings
 
 def label_color(label):
 	""" Return a color from a set of predefined colors. Contains 80 colors in total.
-
 	Args
 		label: The label to get the color for.
-
 	Returns
 		A list of three values representing a RGB color.
-
 		If no color is defined for a certain label, the color green is returned and a warning is printed.
 	"""
 	if label < len(colors):

@@ -91,14 +91,14 @@ def main(args=None):
 	setup_gpu(config['train']['gpu'])
 
 	# Get the submodels manager.
-	submodels_manager = models.submodels.SubmodelsManager(config)
+	submodels_manager = models.submodels.SubmodelsManager(config['submodels'])
 
 	# Get the backbone.
-	backbone = get_backbone(config)
+	backbone = get_backbone(config['backbone'])
 
 	# Get the generators and the submodels updated with info of the generators.
 	generators, submodels = get_generators(
-		config,
+		config['generator'],
 		submodels_manager,
 		preprocess_image=backbone.preprocess_image
 	)

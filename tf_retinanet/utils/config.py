@@ -29,6 +29,8 @@ from .defaults import (
 
 
 def parse_yaml(path):
+	""" Parse a YAML config file to a dictionary.
+	"""
 	with open(path, 'r') as stream:
 		try:
 			config = yaml.safe_load(stream)
@@ -38,6 +40,9 @@ def parse_yaml(path):
 
 
 def clean_dict(config):
+	""" Make sure that all values of a dictionary are dumpable to YAML.
+		If they are not, replace them with their type.
+	"""
 	for key, value in config.items():
 		if isinstance(value, collections.abc.Mapping):
 			config[key] = clean_dict(config[key])
@@ -49,6 +54,9 @@ def clean_dict(config):
 
 
 def dump_yaml(config):
+	""" Dump config as YAML in the path
+		shapshot_path + project_name + 'config.yaml'
+	"""
 	config = clean_dict(config)
 	with open(os.path.join(
 		config['callbacks']['snapshots_path'],
@@ -59,6 +67,11 @@ def dump_yaml(config):
 
 
 def set_defaults(config, default_config):
+	""" Set default values where keys are missing in the current config.
+	Args
+		config         : Dictionary containing parsed configuration settings.
+		default_config : Dictionary containing default configuration settings.
+	"""
 	merged_dict = default_config
 	for key, value in config.items():
 		if isinstance(value, collections.abc.Mapping):
@@ -69,15 +82,24 @@ def set_defaults(config, default_config):
 	return merged_dict
 
 
-def get_drom_dict(datadict, maplist):
+def get_from_dict(datadict, maplist):
+	""" Get the indicated key (maplist) from the dictionary (datadict).
+	"""
 	return reduce(operator.getitem, maplist, datadict)
 
 
 def set_in_dict(datadict, maplist, value):
-	get_drom_dict(datadict, maplist[:-1])[maplist[-1]] = value
+	""" Set the value in the specified key (maplist) in the dictionary (datadict).
+	"""
+	get_from_dict(datadict, maplist[:-1])[maplist[-1]] = value
 
 
 def parse_additional_options(config, options):
+	""" Parse additional options from command line and overwrite on config.
+	Args
+		config  : Dictionary containing configuration settings.
+		options : Additional options parsed from command line.
+	"""
 	for option in options:
 		split = option[0].split('=')
 		value = split[1]
@@ -88,6 +110,12 @@ def parse_additional_options(config, options):
 
 
 def make_training_config(args):
+	""" Create training config by parsing args from command line and YAML config file, filling the rest with default values.
+	Args
+		args : Arguments parsed from command line.
+	Returns
+		config : Dictionary containing training configuration.
+	"""
 	# Parse the configuration file.
 	config = {}
 	if args.config:
@@ -147,6 +175,12 @@ def make_training_config(args):
 
 
 def make_evaluation_config(args):
+	""" Create evaluation config by parsing args from command line and YAML config file, filling the rest with default values.
+	Args
+		args : Arguments parsed from command line.
+	Returns
+		config : Dictionary containing evaluation configuration.
+	"""
 	# Parse the configuration file.
 	config = {}
 	if args.config:
@@ -184,6 +218,12 @@ def make_evaluation_config(args):
 
 
 def make_conversion_config(args):
+	""" Create conversion config by parsing args from command line and YAML config file, filling the rest with default values.
+	Args
+		args: Arguments parsed from command line.
+	Returns
+		config : Dictionary containing conversion configuration.
+	"""
 	# Parse the configuration file.
 	config = {}
 	if args.config:

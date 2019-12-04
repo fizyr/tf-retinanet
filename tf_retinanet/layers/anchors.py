@@ -57,6 +57,10 @@ class Anchors(tf.keras.layers.Layer):
 		super(Anchors, self).__init__(*args, **kwargs)
 
 	def call(self, inputs, **kwargs):
+		""" Generates the anchors.
+		Args
+			inputs : List of [image, features] tensors.
+		"""
 		image, features = inputs
 		features_shape  = tf.keras.backend.shape(features)
 		image_shape     = tf.keras.backend.shape(image)
@@ -71,6 +75,12 @@ class Anchors(tf.keras.layers.Layer):
 		return anchors
 
 	def compute_output_shape(self, input_shape):
+		""" Computes the output shapes given the input shapes.
+		Args
+			input_shape : List of input shapes [boxes, classification, other[0], other[1], ...].
+		Returns
+			Tuple representing the output shapes.
+		"""
 		if None not in input_shape[1][1:]:
 			if tf.keras.backend.image_data_format() == 'channels_first':
 				total = np.prod(input_shape[1][2:4]) * self.num_anchors
@@ -82,6 +92,10 @@ class Anchors(tf.keras.layers.Layer):
 			return (input_shape[1][0], None, 4)
 
 	def get_config(self):
+		""" Gets the configuration of this layer.
+		Returns
+			Dictionary containing the parameters of this layer.
+		"""
 		config = super(Anchors, self).get_config()
 		config.update({
 			'size'   : self.size,

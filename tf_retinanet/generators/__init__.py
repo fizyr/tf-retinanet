@@ -20,6 +20,12 @@ from ..utils import import_package
 
 
 def preprocess_config(config):
+	""" Converts specified config entries to the desired classes or functions.
+	Args
+		config: Dictionary containing generator details.
+	Returns
+		The config dictionary extended with the desired classes and functions.
+	"""
 	# Set the tranform generator class. If the transform_generator flag is set to basic, use only flip_x.
 	if config['transform_generator']  == 'basic':
 		from ..utils.transform import random_transform_generator
@@ -64,10 +70,20 @@ def preprocess_config(config):
 
 
 def get_generators(config, submodels_manager, preprocess_image, **kwargs):
-	generator_pkg = import_package(config['generator']['name'], 'tf_retinanet_generators')
+	""" Imports generators from an external package,
+		and with the retrieved information the submodels manager creates the sumbodels.
+		The link between submodels and generators depends on the used generator, hence they are created together in the external package.
+	Args
+		config:            Dictionary containing name and details for importing the generator.
+		submodels_manager: Manager containing details for the creation of the submodels.
+		preprocess_image:  Function used to preprocess images in the generator.
+	Returns
+		The specified generators and submodels.
+	"""
+	generator_pkg = import_package(config['name'], 'tf_retinanet_generators')
 
 	return generator_pkg.from_config(
-		preprocess_config(config['generator']['details']),
+		preprocess_config(config['details']),
 		submodels_manager,
 		preprocess_image,
 		**kwargs
