@@ -35,42 +35,7 @@ from ..utils.visualization import draw_annotations, draw_boxes, draw_caption
 from ..utils.anchors       import anchors_for_shape, compute_gt_annotations
 from ..generators          import get_generators
 from ..backbones           import get_backbone
-from ..utils.config        import parse_yaml, parse_additional_options
-
-
-def set_defaults(config):
-	# Set defaults for backbone.
-	if 'backbone' not in config:
-		config['backbone'] = {}
-	if 'details' not in config['backbone']:
-		config['backbone']['details'] = {}
-
-	# Set defaults for generator.
-	if 'generator' not in config:
-		config['generator'] = {}
-	if 'details' not in config['generator']:
-		config['generator']['details'] = {}
-
-	# Set defaults for submodels.
-	if 'submodels' not in config:
-		config['submodels'] = {}
-	if 'names' not in config['submodels']:
-		config['submodels']['names'] = ['default_regression', 'default_classification']
-	if 'details' not in config['submodels']:
-		config['submodels']['details'] = {}
-
-	# Set defaults for callbacks config.
-	if 'callbacks' not in config:
-		config['callbacks'] = {}
-	if ('snapshots_path' not in config['callbacks']) or (not config['callbacks']['snapshots_path']):
-		from pathlib import Path
-		home = str(Path.home())
-		config['callbacks']['snapshots_path'] = os.path.join(home, 'retinanet-snapshots')
-	if ('project_name' not in config['callbacks']) or (not config['callbacks']['project_name']):
-		from datetime import datetime
-		config['callbacks']['project_name'] = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-
-	return config
+from ..utils.config        import make_debug_config
 
 
 def parse_args(args):
@@ -100,36 +65,11 @@ def parse_args(args):
 	return parser.parse_args(args)
 
 
-def set_args(config, args):
-	# Additional config; start from this so it can be overwritten by the other command line options.
-	if args.o:
-		config = parse_additional_options(config, args.o)
-
-	if args.backbone:
-		config['backbone']['name'] = args.backbone
-	if args.generator:
-		config['generator']['name'] = args.generator
-
-	# Generator config.
-	if args.random_transform:
-		config['generator']['details']['transform_generator'] = 'random'
-	if args.random_visual_effect:
-		config['generator']['details']['visual_effect_generator'] = 'random'
-	if args.image_min_side:
-		config['generator']['details']['image_min_side'] = args.image_min_side
-	if args.image_max_side:
-		config['generator']['details']['image_max_side'] = args.image_max_side
-
-	return config
-
-
-def run(generator, args, config):
+def run(generator, config):
 	""" Main loop.
-
 	Args
-		generator: The generator to debug.
-		args:      Command line arguments.
-		config:    Configuration fro the neural network.
+		generator : The generator used to debug.
+		config    : Dictionary contaning debug configuration.
 	"""
 	# Display images, one at a time.
 	i = 0
@@ -137,7 +77,7 @@ def run(generator, args, config):
 		# Load the data.
 		image       = generator.load_image(i)
 		annotations = generator.load_annotations(i)
-		if len(annotations['labels']) > 0 :
+		if len(annotations['labels']) > 0:
 			# Apply random transformations.
 			if config['generator']['details']['transform_generator'] == 'random':
 				image, annotations = generator.random_transform_group_entry(image, annotations)
@@ -145,7 +85,7 @@ def run(generator, args, config):
 				image, annotations = generator.random_visual_effect_group_entry(image, annotations)
 
 			# Resize the image and annotations.
-			if args.resize:
+			if config['debug']['resize']:
 				image, image_scale = generator.resize_image(image)
 				annotations['bboxes'] *= image_scale
 
@@ -153,11 +93,11 @@ def run(generator, args, config):
 			positive_indices, _, max_indices = compute_gt_annotations(anchors, annotations['bboxes'])
 
 			# Draw anchors on the image.
-			if args.anchors:
+			if config['debug']['anchors']:
 				draw_boxes(image, anchors[positive_indices], (255, 255, 0), thickness=1)
 
 			# Draw annotations on the image.
-			if args.annotations:
+			if config['debug']['annotations']:
 				# Draw annotations in red.
 				draw_annotations(image, annotations, color=(0, 0, 255), label_to_name=generator.label_to_name)
 
@@ -166,7 +106,7 @@ def run(generator, args, config):
 				draw_boxes(image, annotations['bboxes'][max_indices[positive_indices], :], (0, 255, 0))
 
 			# Display name on the image.
-			if args.display_name:
+			if config['debug']['display_name']:
 				draw_caption(image, [0, image.shape[0]], os.path.basename(generator.image_path(i)))
 
 		cv2.imshow('Image', image)
@@ -188,6 +128,8 @@ def run(generator, args, config):
 
 
 def get_generator(generators):
+	""" Retrieve only one of the created generators.
+	"""
 	if 'validation' in generators:
 		return generators['validation']
 	if 'test' in generators:
@@ -204,11 +146,8 @@ def main(args=None):
 		args = sys.argv[1:]
 	args = parse_args(args)
 
-	# Parse the configuration file.
-	config = {}
-	if args.config:
-		config = parse_yaml(args.config)
-	config = set_defaults(config)
+	# Parse command line and configuration file settings.
+	config = make_debug_config(args)
 
 	# Get the submodels manager.
 	submodels_manager = models.submodels.SubmodelsManager(config['submodels'])
@@ -230,7 +169,7 @@ def main(args=None):
 	cv2.namedWindow('Image', cv2.WINDOW_NORMAL)
 
 	# Run the debug.
-	run(generator, args, config)
+	run(generator, config)
 
 
 if __name__ == '__main__':
