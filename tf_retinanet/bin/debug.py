@@ -73,15 +73,16 @@ def run(generator, config):
 	"""
 	# Display images, one at a time.
 	i = 0
+
 	while True:
 		# Load the data.
 		image       = generator.load_image(i)
 		annotations = generator.load_annotations(i)
 		if len(annotations['labels']) > 0:
 			# Apply random transformations.
-			if config['generator']['details']['transform_generator'] == 'random':
+			if generator.transform_generator:
 				image, annotations = generator.random_transform_group_entry(image, annotations)
-			if config['generator']['details']['visual_effect_generator'] == 'random':
+			if generator.visual_effect_generator:
 				image, annotations = generator.random_visual_effect_group_entry(image, annotations)
 
 			# Resize the image and annotations.
