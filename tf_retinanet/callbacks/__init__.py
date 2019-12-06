@@ -25,7 +25,7 @@ def get_callbacks(
 	training_model,
 	prediction_model,
 	validation_generator=None,
-	evaluation_callback=None
+	evaluation_callback=None,
 ):
 	""" Returns the callbacks indicated in the config.
 	Args

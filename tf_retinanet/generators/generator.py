@@ -257,7 +257,7 @@ class Generator(tf.keras.utils.Sequence):
 			for index in range(annotations['bboxes'].shape[0]):
 				annotations['bboxes'][index, :] = transform_aabb(transform, annotations['bboxes'][index, :])
 
-		return image, annotations
+		return image, annotations, transform
 
 	def random_transform_group(self, image_group, annotations_group):
 		""" Randomly transforms each image and its annotations.
@@ -267,7 +267,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		for index in range(len(image_group)):
 			# Transform a single group entry.
-			image_group[index], annotations_group[index] = self.random_transform_group_entry(image_group[index], annotations_group[index])
+			image_group[index], annotations_group[index], _ = self.random_transform_group_entry(image_group[index], annotations_group[index])
 
 		return image_group, annotations_group
 
