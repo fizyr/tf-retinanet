@@ -85,6 +85,10 @@ def filter_detections(
 	labels              = indices[:, 1]
 	scores, top_indices = tf.nn.top_k(scores, k=tf.keras.backend.minimum(max_detections, tf.keras.backend.shape(scores)[0]))
 
+	# Stop gradients. We do not want to train lower layers.
+	scores      = tf.stop_gradient(scores)
+	top_indices = tf.stop_gradient(top_indices)
+
 	# Filter input using the final set of indices.
 	indices = tf.keras.backend.gather(indices[:, 0], top_indices)
 	boxes   = tf.keras.backend.gather(boxes, indices)
