@@ -3,6 +3,24 @@
 Tensorflow Keras implementation of RetinaNet object detection as described in [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
 by Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He and Piotr Dollár.
 
+## Disclaimer
+
+The repository is still work in progress. Same results as ``keras-retinanet`` are not yet achieved in this repository. Any help will be welcomed.
+
+### TODO's
+
+- [ ] Train properly in order to achieve the same results as ``keras-retinanet``.
+- [ ] Update jupyter notebook.
+- [ ] Benchmark network speed.
+
+## Components
+
+The ``tf-retinanet`` project has been designed to be modular. The following components are part of the project:
+* **Backbones**:
+   * [ResNet](https://github.com/fizyr/tf-retinanet-backbones-resnet)
+* **Generators**:
+   * [COCO](https://github.com/fizyr/tf-retinanet-generators-coco)
+
 ## Installation
 
 1) Clone this repository.
@@ -15,7 +33,7 @@ by Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He and Piotr Dollár.
 5) Optionally, install `pycocotools` if you want to train / test on the MS COCO dataset by running `pip install --user git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI`.
 
 ## Testing
-# TODO update notebook
+
 In general, inference of the network works as follows:
 ```python
 boxes, scores, labels = model.predict_on_batch(inputs)
@@ -28,9 +46,6 @@ Loading models can be done in the following manner:
 from tf_retinanet.models import load_model
 model = load_model('/path/to/model.h5', backbone=backbone)
 ```
-
-## TODO time it again
-#Execution time on NVIDIA Pascal Titan X is roughly 75msec for an image of shape `1000x800x3`.
 
 ### Converting a training model to inference model
 The training procedure of `tf-retinanet` works with *training models*. These are stripped down versions compared to the *inference model* and only contains the layers necessary for training (regression and classification values). If you wish to do inference on a model (perform object detection on an image), you need to convert the trained model to an inference model. This is done as follows:
@@ -55,12 +70,6 @@ you will need to switch it to use absolute imports.
 If you installed `tf-retinanet` correctly, the train script will be installed as `retinanet-train`.
 However, if you make local modifications to the `tf-retinanet` repository, you should run the script directly from the repository.
 That will ensure that your local changes will be used by the train script.
-
-# TODO
-#The default backbone is `resnet50`. You can change this using the `--backbone=xxx` argument in the running script.
-#`xxx` can be one of the backbones in resnet models (`resnet50`, `resnet101`, `resnet152`), mobilenet models (`mobilenet128_1.0`, `mobilenet128_0.75`, `mobilenet160_1.0`, etc), densenet models or vgg models. The different options are defined by each model in their corresponding python scripts (`resnet.py`, `mobilenet.py`, etc).
-
-Trained models can't be used directly for inference. To convert a trained model to an inference model, check [here](https://github.com/fizyr/tf-retinanet#converting-a-training-model-to-inference-model).
 
 ### Usage
 
@@ -110,7 +119,7 @@ Example output images using `tf-retinanet` are shown below.
 If you have a project based on `tf-retinanet` or `keras-retinanet` and would like to have it published here, shoot me a message on Slack.
 
 ### Notes
-* This repository requires Tensorflow 1.14 or higher.
+* This repository requires Tensorflow 2.0 or higher.
 
 Contributions to this project are welcome.
 
