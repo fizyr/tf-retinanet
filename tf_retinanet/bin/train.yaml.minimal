@@ -1,5 +1,5 @@
 backbone:
-  name: legacy_resnet
+  name: resnet
   details:
     type: resnet50
 

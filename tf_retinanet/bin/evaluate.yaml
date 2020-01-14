@@ -1,12 +1,12 @@
 backbone:
-  name: legacy-resnet
+  name: resnet
   details:
     type: resnet50
 
 evaluate:
   weights: /insert/weights/path/to/model.h5
 
-  generator:
+generator:
   name: coco
   details:
     data_dir: /srv/dataset/COCO/
