@@ -97,7 +97,7 @@ def retinanet(
 
 	retinanet_submodels = []
 	for submodel in submodels:
-		retinanet_submodels.append((submodel.get_name(), submodel.create(num_anchors=num_anchors)))
+		retinanet_submodels.append((submodel.get_name(), submodel.create(num_anchors=num_anchors, name='{}_submodel'.format(submodel.get_name()))))
 
 	C3, C4, C5 = backbone_layers
 

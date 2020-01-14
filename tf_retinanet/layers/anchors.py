@@ -61,9 +61,8 @@ class Anchors(tf.keras.layers.Layer):
 		Args
 			inputs : List of [image, features] tensors.
 		"""
-		image, features = inputs
-		features_shape  = tf.keras.backend.shape(features)
-		image_shape     = tf.keras.backend.shape(image)
+		features_shape  = tf.keras.backend.shape(inputs[1])
+		image_shape     = tf.keras.backend.shape(inputs[0])
 
 		# Generate proposals from bbox deltas and shifted anchors.
 		if tf.keras.backend.image_data_format() == 'channels_first':
