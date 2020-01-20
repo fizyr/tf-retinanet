@@ -73,7 +73,7 @@ def set_defaults(config, default_config):
 		config         : Dictionary containing parsed configuration settings.
 		default_config : Dictionary containing default configuration settings.
 	"""
-	merged_dict = default_config
+	merged_dict = default_config.copy()
 	for key, value in config.items():
 		if isinstance(value, collections.abc.Mapping):
 			merged_dict[key] = set_defaults(value, merged_dict.get(key, {}))
