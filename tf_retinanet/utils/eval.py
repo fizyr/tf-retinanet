@@ -80,7 +80,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
 		# run network
 		start = time.time()
-		boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))[:3]
+		boxes, scores, labels = model.predict(np.expand_dims(image, axis=0))[:3]
 		inference_time = time.time() - start
 
 		# correct boxes for image scale

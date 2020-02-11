@@ -84,9 +84,6 @@ def main(args=None):
 	# Parse command line and configuration file settings.
 	config = make_training_config(args)
 
-	# Disable eager, prevents memory leak and makes training faster.
-	tf.compat.v1.disable_eager_execution()
-
 	# Set gpu configuration.
 	setup_gpu(config['train']['gpu'])
 

@@ -16,7 +16,7 @@ def import_package(name, package_type):
 	try:
 		package = __import__(package_type, fromlist=[name])
 		package = getattr(package, name)
-	except ImportError:
-		raise(name + ' is not present in ' + package_type)
+	except ImportError as e:
+		raise Exception(name + ' is not present in ' + package_type) from e
 
 	return package

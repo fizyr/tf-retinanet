@@ -1,11 +1,11 @@
 """
-Copyright 2017-2019 Fizyr (https://fizyr.com)
+Copyright 2017-2020 Fizyr (https://fizyr.com)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,11 @@ from __future__ import print_function
 import tensorflow as tf
 import sys
 
-MINIMUM_TF_VERSION = 1, 12, 0
+MINIMUM_TF_VERSION = 1, 14, 0
+BLACKLISTED_TF_VERSIONS = [
+	(2, 0, 0),  # Has a number of memory leaks and issues with eager execution.
+	(2, 0, 1),  # Has a number of memory leaks and issues with eager execution.
+]
 
 
 def tf_version():
@@ -30,22 +34,22 @@ def tf_version():
 	return tuple(map(int, tf.version.VERSION.split('-')[0].split('.')))
 
 
-def tf_version_ok(minimum_tf_version=MINIMUM_TF_VERSION):
+def tf_version_ok(minimum_tf_version=MINIMUM_TF_VERSION, blacklisted=BLACKLISTED_TF_VERSIONS):
 	""" Check if the current Tensorflow version is higher than the minimum version.
 	"""
-	return tf_version() >= minimum_tf_version
+	return tf_version() >= minimum_tf_version and tf_version() not in blacklisted
 
 
-def assert_tf_version(minimum_tf_version=MINIMUM_TF_VERSION):
-	""" Assert that the Keras version is up to date.
+def assert_tf_version(minimum_tf_version=MINIMUM_TF_VERSION, blacklisted=BLACKLISTED_TF_VERSIONS):
+	""" Assert that the Tensorflow version is up to date.
 	"""
 	detected = tf.version.VERSION
 	required = '.'.join(map(str, minimum_tf_version))
-	assert(tf_version() >= minimum_tf_version), 'You are using tf version {}. The minimum required version is {}.'.format(detected, required)
+	assert(tf_version_ok(minimum_tf_version, blacklisted)), 'You are using tensorflow version {}. The minimum required version is {} (blacklisted: {}).'.format(detected, required, blacklisted)
 
 
 def check_tf_version():
-	""" Check that the Keras version is up to date. If it isn't, print an error message and exit the script.
+	""" Check that the Tensorflow version is up to date. If it isn't, print an error message and exit the script.
 	"""
 	try:
 		assert_tf_version()

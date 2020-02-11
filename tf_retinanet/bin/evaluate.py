@@ -73,9 +73,6 @@ def main(args=None):
 	# Parse command line and configuration file settings.
 	config = make_evaluation_config(args)
 
-	# Disable eager, prevents memory leak and makes evaluating faster.
-	tf.compat.v1.disable_eager_execution()
-
 	# Set gpu configuration.
 	setup_gpu(config['evaluate']['gpu'])
 
