@@ -34,10 +34,10 @@ class ClipBoxes(tf.keras.layers.Layer):
 		else:
 			height = shape[1]
 			width  = shape[2]
-		x1 = tf.clip_by_value(boxes[:, :, 0], 0, width)
-		y1 = tf.clip_by_value(boxes[:, :, 1], 0, height)
-		x2 = tf.clip_by_value(boxes[:, :, 2], 0, width)
-		y2 = tf.clip_by_value(boxes[:, :, 3], 0, height)
+		x1 = tf.clip_by_value(boxes[:, :, 0], 0, width  - 1)
+		y1 = tf.clip_by_value(boxes[:, :, 1], 0, height - 1)
+		x2 = tf.clip_by_value(boxes[:, :, 2], 0, width  - 1)
+		y2 = tf.clip_by_value(boxes[:, :, 3], 0, height - 1)
 
 		return tf.keras.backend.stack([x1, y1, x2, y2], axis=2)
 
