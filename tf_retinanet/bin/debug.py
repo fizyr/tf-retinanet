@@ -81,7 +81,7 @@ def run(generator, config):
 		if len(annotations['labels']) > 0:
 			# Apply random transformations.
 			if generator.transform_generator:
-				image, annotations = generator.random_transform_group_entry(image, annotations)
+				image, annotations, transform = generator.random_transform_group_entry(image, annotations)
 			if generator.visual_effect_generator:
 				image, annotations = generator.random_visual_effect_group_entry(image, annotations)
 
