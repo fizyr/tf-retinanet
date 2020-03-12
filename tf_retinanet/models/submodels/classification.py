@@ -22,12 +22,12 @@ import tensorflow as tf
 
 
 def default_classification_model(
-	num_classes,
-	num_anchors,
-	pyramid_feature_size=256,
-	prior_probability=0.01,
-	classification_feature_size=256,
-	name='classification_submodel'
+	num_classes: int,
+	num_anchors: int,
+	pyramid_feature_size: int = 256,
+	prior_probability: int = 0.01,
+	classification_feature_size: int = 256,
+	name: str = 'classification_submodel'
 ):
 	""" Creates the default regression submodel.
 	Args
@@ -78,31 +78,26 @@ def default_classification_model(
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
-submodel_defaults = {
-	'name'        : 'classification',
-	'num_classes' : 0
-}
-
-
 class ClassificationSubmodel(Submodel):
 	""" simple classification submodel, performing multi-class prediction.
 	"""
-	def __init__(self, config, **kwargs):
+	def __init__(
+		self,
+		name: str = 'classification',
+		num_classes: int = 0,
+		num_anchors: int = 0,
+	):
 		""" Constructor for classification submodel.
 		Args
-			config : Defines the configuration of the submodel.
-					 It should contain:
-						name        : The name of the submodel.
-						num_classes : Number of classes to classify.
-					 If not specified, default values indicated above will be used.
+			name        : The name of the submodel.
+			num_classes : Number of classes to classify.
 		"""
-		config = set_defaults(config, submodel_defaults)
+		if num_classes < 1:
+			raise ValueError(f"expected a positive number of classes, got {num_classes}")
 
-		if config['num_classes'] < 1:
-			raise ValueError("Please indicate a positive number of classes for classification submodel.")
-
-		self.name        = config['name']
-		self.num_classes = config['num_classes']
+		self.name        = name
+		self.num_classes = num_classes
+		self.num_anchors = num_anchors
 
 		super(ClassificationSubmodel, self).__init__()
 
@@ -124,7 +119,7 @@ class ClassificationSubmodel(Submodel):
 	def create(self, **kwargs):
 		""" Create the actual (keras.models.Model) submodel.
 		"""
-		return default_classification_model(num_classes=self.size(), **kwargs)
+		return default_classification_model(num_classes=self.size(), num_anchors=self.num_anchors, **kwargs)
 
 	def loss(self):
 		""" Define a loss function for the regression submodel.

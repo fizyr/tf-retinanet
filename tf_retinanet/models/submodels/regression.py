@@ -20,7 +20,13 @@ import tensorflow as tf
 from ...utils.config import set_defaults
 
 
-def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name='regression_submodel'):
+def default_regression_model(
+	num_values: int,
+	num_anchors: int,
+	pyramid_feature_size: int = 256,
+	regression_feature_size: int = 256,
+	name: str = 'regression_submodel'
+):
 	""" Creates the default regression submodel.
 	Args
 		num_values              : Number of values to regress.
@@ -63,31 +69,27 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
 	return tf.keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
-submodel_defaults = {
-	'name'       : 'bbox_regression',
-	'num_values' : 4,
-}
-
-
 class BboxRegressionSubmodel(Submodel):
 	""" Simple bounding box regression submodel.
 	"""
-	def __init__(self, config, **kwargs):
+	def __init__(
+		self,
+		name: str = 'bbox_regression',
+		num_values: int = 4,
+		num_anchors: int = 9,
+	):
 		""" Constructor for bbox regression submodel.
 		Args
-			config : Defines the configuration of the submodel.
-					 It should contain:
-						name       : The name of the submodel.
-						num_values : Number of values to regress.
-					 If not specified, default values indicated above will be used.
+			name       : The name of the submodel.
+			num_values : Number of values to regress.
+			num_anchors: Number of anchors to regress per feature vector.
 		"""
-		config = set_defaults(config, submodel_defaults)
+		if num_values < 1:
+			raise ValueError(f"expected positive number of values, got {num_values}")
 
-		if config['num_values'] < 1:
-			raise ValueError("Please specify a positive number of values for regression submodel.")
-
-		self.name       = config['name']
-		self.num_values = config['num_values']
+		self.name        = name
+		self.num_values  = num_values
+		self.num_anchors = num_anchors
 
 		super(BboxRegressionSubmodel, self).__init__()
 
@@ -109,7 +111,7 @@ class BboxRegressionSubmodel(Submodel):
 	def create(self, **kwargs):
 		""" Create a regression submodel.
 		"""
-		return default_regression_model(num_values=self.size(), **kwargs)
+		return default_regression_model(num_values=self.size(), num_anchors=self.num_anchors, **kwargs)
 
 	def loss(self):
 		""" Define a loss function for the regression submodel.

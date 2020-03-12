@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List, Callable, Dict
+
 import tensorflow as tf
 
 from ..utils.anchors import AnchorParameters
@@ -66,18 +68,17 @@ def build_anchors(anchor_parameters, features):
 
 
 def retinanet(
-	inputs,
-	backbone_layers,
-	submodels,
-	num_anchors             = None,
-	create_pyramid_features = fpn.create_pyramid_features,
-	name                    = 'retinanet'
+	inputs                  : List[tf.keras.layers.Input],
+	backbone_layers         : List[tf.keras.layers.Layer],
+	submodels               : List[Dict[str, tf.keras.Model]],
+	create_pyramid_features : Callable[[List[tf.Tensor]], List[tf.Tensor]] = fpn.create_pyramid_features,
+	name                    : str = 'retinanet'
 ):
 	""" Construct a RetinaNet model on top of a backbone.
 	This model is the minimum model necessary for training (with the unfortunate exception of anchors as output).
+
 	Args
 		inputs                  : keras.layers.Input (or list of) for the input to the model.
-		num_anchors             : Number of base anchors.
 		create_pyramid_features : Functor for creating pyramid features given the features C3, C4, C5 from the backbone.
 		submodels               : Submodels to run on each feature map (default is regression and classification submodels).
 		name                    : Name of the model.
@@ -90,21 +91,13 @@ def retinanet(
 		]
 		```
 	"""
-
-	if num_anchors is None:
-		num_anchors = AnchorParameters.default.num_anchors()
-
-	retinanet_submodels = []
-	for submodel in submodels:
-		retinanet_submodels.append((submodel.get_name(), submodel.create(num_anchors=num_anchors, name='{}_submodel'.format(submodel.get_name()))))
-
 	C3, C4, C5 = backbone_layers
 
 	# Compute pyramid features as per https://arxiv.org/abs/1708.02002.
 	features = create_pyramid_features(C3, C4, C5)
 
 	# For all pyramid levels, run available submodels.
-	pyramids = fpn.build_pyramid(retinanet_submodels, features)
+	pyramids = fpn.build_pyramid(submodels, features)
 
 	return tf.keras.models.Model(inputs=inputs, outputs=pyramids, name=name)
 

@@ -16,11 +16,18 @@ limitations under the License.
 
 from ..utils import import_package
 
+import numpy as np
+
 
 class Backbone(object):
 	""" This class stores additional information on backbones.
 	"""
-	def __init__(self, config):
+	def __init__(self):
+		""" Construct a backbone from a configuration dict.
+
+		Args
+			modifer: Lambda function for modifying the backbone before using it.
+		"""
 		# a dictionary mapping custom layer names to the correct classes
 		from .. import layers
 		from .. import losses
@@ -36,32 +43,19 @@ class Backbone(object):
 			'_focal'           : losses.focal(),
 		}
 
-		self.backbone = config['type']
-		self.weights  = config['weights']
-		self.modifier = None
-		if config['freeze']:
-			from ..utils.model import freeze as freeze_model
-			self.modifier = freeze_model
-		self.validate()
-
 	def retinanet(self, *args, **kwargs):
 		""" Returns a retinanet model using the correct backbone.
 		"""
 		raise NotImplementedError('retinanet method not implemented.')
 
-	def validate(self):
-		""" Checks whether the backbone string is correct.
-		"""
-		raise NotImplementedError('validate method not implemented.')
-
-	def preprocess_image(self, inputs):
+	def preprocess_image(self, image: np.ndarray):
 		""" Takes as input an image and prepares it for being passed through the network.
 		Having this function in Backbone allows other backbones to define a specific preprocessing step.
 		"""
 		raise NotImplementedError('preprocess_image method not implemented.')
 
 
-def get_backbone(config):
+def get_backbone(config: dict):
 	""" Imports a backbone from an external package.
 	Args
 		config: Dictionary containing name and details for importing the backbone.

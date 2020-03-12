@@ -22,11 +22,11 @@ from functools import reduce
 import collections.abc
 
 from .defaults import (
-		default_training_config,
-		default_evaluation_config,
-		default_conversion_config,
-		default_debugging_config
-		)
+	default_training_config,
+	default_evaluation_config,
+	default_conversion_config,
+	default_debugging_config
+)
 
 
 def parse_yaml(path):
