@@ -294,7 +294,7 @@ def generate_anchors(base_size=16, ratios=None, scales=None):
 
 
 def bbox_transform(anchors, gt_boxes, mean=None, std=None):
-	"""Compute bounding-box regression targets for an image.
+	""" Compute bounding-box regression targets for an image.
 	"""
 	if mean is None:
 		mean = np.array([0, 0, 0, 0])

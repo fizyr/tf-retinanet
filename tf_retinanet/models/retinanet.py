@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import List, Callable, Dict
+from typing import List, Callable, Tuple
 
 import tensorflow as tf
 
@@ -70,7 +70,7 @@ def build_anchors(anchor_parameters, features):
 def retinanet(
 	inputs                  : List[tf.keras.layers.Input],
 	backbone_layers         : List[tf.keras.layers.Layer],
-	submodels               : List[Dict[str, tf.keras.Model]],
+	submodels               : List[Tuple[str, tf.keras.Model]],
 	create_pyramid_features : Callable[[List[tf.Tensor]], List[tf.Tensor]] = fpn.create_pyramid_features,
 	name                    : str = 'retinanet'
 ):
