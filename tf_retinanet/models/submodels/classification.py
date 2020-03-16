@@ -85,7 +85,7 @@ class ClassificationSubmodel(Submodel):
 		self,
 		name: str = 'classification',
 		num_classes: int = 0,
-		num_anchors: int = 0,
+		num_anchors: int = 9,
 	):
 		""" Constructor for classification submodel.
 		Args
