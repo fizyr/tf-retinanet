@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@ limitations under the License.
 import numpy as np
 import random
 import warnings
+from typing import List, Tuple
 
 import tensorflow as tf
 
@@ -45,16 +46,16 @@ class Generator(tf.keras.utils.Sequence):
 		self,
 		transform_generator=None,
 		visual_effect_generator=None,
-		batch_size=1,
-		group_method='ratio',  # one of 'none', 'random', 'ratio'
-		shuffle_groups=True,
-		image_min_side=800,
-		image_max_side=1333,
+		batch_size: int = 1,
+		group_method: str = 'ratio',  # one of 'none', 'random', 'ratio'
+		shuffle_groups: bool = True,
+		image_min_side: int = 800,
+		image_max_side: int = 1333,
 		transform_parameters=None,
 		compute_anchor_targets=anchor_targets_bbox,
 		compute_shapes=guess_shapes,
 		preprocess_image=preprocess_image,
-		anchors_config=None
+		anchors_config: dict = None
 	):
 		""" Initialize Generator object.
 		Args
@@ -96,10 +97,10 @@ class Generator(tf.keras.utils.Sequence):
 
 	def __from_config__(
 		self,
-		config,
+		config: dict,
 		preprocess_image=preprocess_image,
 		compute_anchor_targets=anchor_targets_bbox
-	):
+	) -> Generator:
 		""" Initialize Generator object from a configuration.
 		Args
 			config                 : Configuration for the generator.
@@ -126,52 +127,52 @@ class Generator(tf.keras.utils.Sequence):
 		if self.shuffle_groups:
 			random.shuffle(self.groups)
 
-	def size(self):
+	def size(self) -> int:
 		""" Size of the dataset.
 		"""
 		raise NotImplementedError('size method not implemented')
 
-	def num_classes(self):
+	def num_classes(self) -> int:
 		""" Number of classes in the dataset.
 		"""
 		raise NotImplementedError('num_classes method not implemented')
 
-	def has_label(self, label):
+	def has_label(self, label: int) -> bool:
 		""" Returns True if label is a known label.
 		"""
 		raise NotImplementedError('has_label method not implemented')
 
-	def has_name(self, name):
+	def has_name(self, name: str) -> bool:
 		""" Returns True if name is a known class.
 		"""
 		raise NotImplementedError('has_name method not implemented')
 
-	def name_to_label(self, name):
+	def name_to_label(self, name: str) -> int:
 		""" Map name to label.
 		"""
 		raise NotImplementedError('name_to_label method not implemented')
 
-	def label_to_name(self, label):
+	def label_to_name(self, label: int) -> str:
 		""" Map label to name.
 		"""
 		raise NotImplementedError('label_to_name method not implemented')
 
-	def image_aspect_ratio(self, image_index):
+	def image_aspect_ratio(self, image_index: int) -> float:
 		""" Compute the aspect ratio for an image with image_index.
 		"""
 		raise NotImplementedError('image_aspect_ratio method not implemented')
 
-	def load_image(self, image_index):
+	def load_image(self, image_index: int) -> np.ndarray:
 		""" Load an image at the image_index.
 		"""
 		raise NotImplementedError('load_image method not implemented')
 
-	def load_annotations(self, image_index):
+	def load_annotations(self, image_index: int) -> dict:
 		""" Load annotations for an image_index.
 		"""
 		raise NotImplementedError('load_annotations method not implemented')
 
-	def load_annotations_group(self, group):
+	def load_annotations_group(self, group: List[int]) -> List[dict]:
 		""" Load annotations for all images in group.
 		"""
 		annotations_group = [self.load_annotations(image_index) for image_index in group]
@@ -182,7 +183,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return annotations_group
 
-	def filter_annotations(self, image_group, annotations_group, group):
+	def filter_annotations(self, image_group: List[np.ndarray], annotations_group: List[dict], group: List[int]) -> Tuple[List[np.ndarray], List[dict]]:
 		""" Filter annotations by removing those that are outside of the image bounds or whose width/height < 0.
 		"""
 		# Test all annotations.
@@ -209,7 +210,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image_group, annotations_group
 
-	def random_visual_effect_group_entry(self, image, annotations):
+	def random_visual_effect_group_entry(self, image: np.ndarray, annotations: dict) -> Tuple[np.ndarray, dict]:
 		""" Randomly transforms image and annotation.
 		"""
 		visual_effect = next(self.visual_effect_generator)
@@ -219,7 +220,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image, annotations
 
-	def random_visual_effect_group(self, image_group, annotations_group):
+	def random_visual_effect_group(self, image_group: List[np.ndarray], annotations_group: List[dict]) -> Tuple[List[np.ndarray], List[dict]]:
 		""" Randomly apply visual effect on each image.
 		"""
 		assert(len(image_group) == len(annotations_group))
@@ -236,12 +237,12 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image_group, annotations_group
 
-	def load_image_group(self, group):
+	def load_image_group(self, group: List[int]) -> List[np.ndarray]:
 		""" Load images for all images in a group.
 		"""
 		return [self.load_image(image_index) for image_index in group]
 
-	def random_transform_group_entry(self, image, annotations, transform=None):
+	def random_transform_group_entry(self, image: np.ndarray, annotations: List[dict], transform=None) -> Tuple[np.ndarray, dict, np.ndarray]:
 		""" Randomly transforms image and annotation.
 		"""
 		# Randomly transform both image and annotations.
@@ -259,7 +260,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image, annotations, transform
 
-	def random_transform_group(self, image_group, annotations_group):
+	def random_transform_group(self, image_group: List[np.ndarray], annotations_group: List[dict]) -> Tuple[List[np.ndarray], List[dict]]:
 		""" Randomly transforms each image and its annotations.
 		"""
 
@@ -271,12 +272,12 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image_group, annotations_group
 
-	def resize_image(self, image):
+	def resize_image(self, image: np.ndarray) -> np.ndarray:
 		""" Resize an image using image_min_side and image_max_side.
 		"""
 		return resize_image(image, min_side=self.image_min_side, max_side=self.image_max_side)
 
-	def preprocess_group_entry(self, image, annotations):
+	def preprocess_group_entry(self, image: np.ndarray, annotations: dict) -> Tuple[np.ndarray, dict]:
 		""" Preprocess image and its annotations.
 		"""
 		# Preprocess the image.
@@ -293,7 +294,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image, annotations
 
-	def preprocess_group(self, image_group, annotations_group):
+	def preprocess_group(self, image_group: List[np.ndarray], annotations_group: List[dict]) -> Tuple[List[np.ndarray], List[dict]]:
 		""" Preprocess each image and its annotations in its group.
 		"""
 		assert(len(image_group) == len(annotations_group))
@@ -317,7 +318,7 @@ class Generator(tf.keras.utils.Sequence):
 		# Divide into groups, one group = one batch.
 		self.groups = [[order[x % len(order)] for x in range(i, i + self.batch_size)] for i in range(0, len(order), self.batch_size)]
 
-	def compute_inputs(self, image_group):
+	def compute_inputs(self, image_group: List[np.ndarray]) -> np.ndarray:
 		""" Compute inputs for the network using an image_group.
 		"""
 		# Get the max image shape.
@@ -335,12 +336,12 @@ class Generator(tf.keras.utils.Sequence):
 
 		return image_batch
 
-	def generate_anchors(self, image_shape):
+	def generate_anchors(self, image_shape: Tuple[int]) -> np.ndarray:
 		""" Generates anchors for an indicated image shape.
 		"""
 		return anchors_for_shape(image_shape, anchor_params=self.anchor_params, shapes_callback=self.compute_shapes)
 
-	def compute_targets(self, image_group, annotations_group):
+	def compute_targets(self, image_group: List[np.ndarray], annotations_group: List[dict]) -> List[np.ndarray]:
 		""" Compute target outputs for the network using images and their annotations.
 		"""
 		# Get the max image shape.
@@ -356,7 +357,7 @@ class Generator(tf.keras.utils.Sequence):
 
 		return list(batches)
 
-	def compute_input_output(self, group):
+	def compute_input_output(self, group: List[int]) -> Tuple[List[np.ndarray], List[np.ndarray]]:
 		""" Compute inputs and target outputs for the network.
 		"""
 		# Load images and annotations.
@@ -383,14 +384,14 @@ class Generator(tf.keras.utils.Sequence):
 
 		return inputs, targets
 
-	def __len__(self):
+	def __len__(self) -> int:
 		"""
 		Number of batches for generator.
 		"""
 
 		return len(self.groups)
 
-	def __getitem__(self, index):
+	def __getitem__(self, index: int) -> Tuple[List[np.ndarray], List[np.ndarray]]:
 		"""
 		Keras sequence method for generating batches.
 		"""

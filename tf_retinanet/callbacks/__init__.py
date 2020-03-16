@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,22 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .common import *  # noqa: F401,F403
-
 import os
+from typing import List
+
+import tensorflow as tf
+
+from .common import *  # noqa: F401,F403
+from ..generators.generator import Generator
 
 
 def get_callbacks(
-	config,
-	model,
-	training_model,
-	prediction_model,
-	validation_generator=None,
-	evaluation_callback=None,
-):
+	snapshots_path: str,
+	project_name: str,
+	model: tf.keras.Model,
+	training_model: tf.keras.Model,
+	prediction_model: tf.keras.Model,
+	validation_generator: Generator = None,
+	evaluation_callback: Generator = None,
+) -> List[tf.keras.callbacks.Callback]:
 	""" Returns the callbacks indicated in the config.
 	Args
-		config              : Dictionary with indications about the callbacks.
+		snapshots_path      : The path to save snapshots to.
+		project_name        : The name of the project, which will be used to create a directory.
 		model               : The used model.
 		prediction_model    : The used prediction model.
 		training_model      : The used training model.
@@ -41,11 +47,11 @@ def get_callbacks(
 	callbacks = []
 
 	# Save snapshots of the model.
-	os.makedirs(os.path.join(config['snapshots_path'], config['project_name']))
+	os.makedirs(os.path.join(snapshots_path, project_name))
 	checkpoint = tf.keras.callbacks.ModelCheckpoint(
 		os.path.join(
-			config['snapshots_path'],
-			config['project_name'],
+			snapshots_path,
+			project_name,
 			'{epoch:02d}.h5'
 		),
 		verbose=1,

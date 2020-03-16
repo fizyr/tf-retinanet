@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,10 @@ limitations under the License.
 from ..utils import import_package
 
 import numpy as np
+import tensorflow as tf
 
 
-class Backbone(object):
+class Backbone():
 	""" This class stores additional information on backbones.
 	"""
 	def __init__(self):
@@ -33,32 +34,33 @@ class Backbone(object):
 		from .. import losses
 		from .. import initializers
 		self.custom_objects = {
-			'UpsampleLike'     : layers.UpsampleLike,
-			'PriorProbability' : initializers.PriorProbability,
-			'RegressBoxes'     : layers.RegressBoxes,
-			'FilterDetections' : layers.FilterDetections,
-			'Anchors'          : layers.Anchors,
-			'ClipBoxes'        : layers.ClipBoxes,
-			'_smooth_l1'       : losses.smooth_l1(),
-			'_focal'           : losses.focal(),
+			'UpsampleLike'    : layers.UpsampleLike,
+			'PriorProbability': initializers.PriorProbability,
+			'RegressBoxes'    : layers.RegressBoxes,
+			'FilterDetections': layers.FilterDetections,
+			'Anchors'         : layers.Anchors,
+			'ClipBoxes'       : layers.ClipBoxes,
+			'_smooth_l1'      : losses.smooth_l1(),
+			'_focal'          : losses.focal(),
 		}
 
-	def retinanet(self, *args, **kwargs):
+	def retinanet(self, *args, **kwargs) -> tf.keras.Model:
 		""" Returns a retinanet model using the correct backbone.
 		"""
 		raise NotImplementedError('retinanet method not implemented.')
 
-	def preprocess_image(self, image: np.ndarray):
+	def preprocess_image(self, image: np.ndarray) -> np.ndarray:
 		""" Takes as input an image and prepares it for being passed through the network.
 		Having this function in Backbone allows other backbones to define a specific preprocessing step.
 		"""
 		raise NotImplementedError('preprocess_image method not implemented.')
 
 
-def get_backbone(config: dict):
+def get_backbone(name: str, details: dict) -> Backbone:
 	""" Imports a backbone from an external package.
 	Args
-		config: Dictionary containing name and details for importing the backbone.
+		name: Name of the backbone that should be imported.
+		details: Configuration for the backbone.
 	Returns
 		The specified backbone.
 	"""

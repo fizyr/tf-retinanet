@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import numpy as np
+
 import tensorflow as tf
 
 
-def shift(shape, stride, anchors):
+def shift(shape: tf.Tensor, stride: np.ndarray, anchors: np.ndarray) -> np.ndarray:
 	""" Produce shifted anchors based on shape of the map and stride size.
 	Args
 		shape  : Shape to shift the anchors over.
@@ -49,7 +51,7 @@ def shift(shape, stride, anchors):
 	return shifted_anchors
 
 
-def bbox_transform_inv(boxes, deltas, mean=None, std=None):
+def bbox_transform_inv(boxes: tf.Tensor, deltas: tf.Tensor, mean: np.ndarray = None, std: np.ndarray = None):
 	""" Applies deltas (usually regression results) to boxes (usually anchors).
 	Before applying the deltas to the boxes, the normalization that was previously applied (in the generator) has to be removed.
 	The mean and std are the mean and std as applied in the generator. They are unnormalized in this function and then applied to the boxes.

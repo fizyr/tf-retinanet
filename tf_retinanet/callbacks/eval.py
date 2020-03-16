@@ -16,6 +16,7 @@ limitations under the License.
 
 import tensorflow as tf
 from ..utils.eval import evaluate
+from ..generators.generator import Generator
 
 
 class Evaluate(tf.keras.callbacks.Callback):
@@ -24,14 +25,14 @@ class Evaluate(tf.keras.callbacks.Callback):
 
 	def __init__(
 		self,
-		generator,
-		iou_threshold=0.5,
-		score_threshold=0.05,
-		max_detections=100,
-		save_path=None,
-		tensorboard=None,
-		weighted_average=False,
-		verbose=1
+		generator: Generator,
+		iou_threshold: float = 0.5,
+		score_threshold: float = 0.05,
+		max_detections: int = 100,
+		save_path: str = None,
+		tensorboard: tf.keras.callbacks.TensorBoard = None,
+		weighted_average: bool = False,
+		verbose: int = 1
 	):
 		""" Evaluate a given dataset using a given model at the end of every epoch during training.
 		Args
@@ -55,7 +56,7 @@ class Evaluate(tf.keras.callbacks.Callback):
 
 		super(Evaluate, self).__init__()
 
-	def on_epoch_end(self, epoch, logs=None):
+	def on_epoch_end(self, epoch: int, logs=None):
 		""" Run the evaluation callback at the end of a given epoch.
 		"""
 		logs = logs or {}

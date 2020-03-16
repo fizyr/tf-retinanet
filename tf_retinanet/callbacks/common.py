@@ -32,24 +32,24 @@ class RedirectModel(tf.keras.callbacks.Callback):
 
 	def __init__(
 		self,
-		callback,
-		model
+		callback: tf.keras.callbacks.Callback,
+		model: tf.keras.Model
 	):
 		super(RedirectModel, self).__init__()
 
 		self.callback = callback
 		self.redirect_model = model
 
-	def on_epoch_begin(self, epoch, logs=None):
+	def on_epoch_begin(self, epoch: int, logs=None):
 		self.callback.on_epoch_begin(epoch, logs=logs)
 
-	def on_epoch_end(self, epoch, logs=None):
+	def on_epoch_end(self, epoch: int, logs=None):
 		self.callback.on_epoch_end(epoch, logs=logs)
 
-	def on_batch_begin(self, batch, logs=None):
+	def on_batch_begin(self, batch: int, logs=None):
 		self.callback.on_batch_begin(batch, logs=logs)
 
-	def on_batch_end(self, batch, logs=None):
+	def on_batch_end(self, batch: int, logs=None):
 		self.callback.on_batch_end(batch, logs=logs)
 
 	def on_train_begin(self, logs=None):
