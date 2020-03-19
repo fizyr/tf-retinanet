@@ -3,7 +3,9 @@ Copyright 2017-2019 Fizyr (https://fizyr.com)
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,13 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Tuple, Callable
 
 from ...utils import import_package
 from ...utils.defaults import default_submodels_config
 
+import tensorflow as tf
 
-class SubmodelsManager(object):
+
+class SubmodelsManager():
 	""" Class that parses submodels from configuration and creates them.
 	"""
 	def __init__(self, submodel_configs: List[Dict[str, dict]] = None):
@@ -47,13 +51,11 @@ class SubmodelsManager(object):
 				raise ValueError("A submodel category was not specified.")
 			elif submodel['category'] == 'default_regression':
 				from .regression import BboxRegressionSubmodel
-				submodel['class'] = BboxRegressionSubmodel
-				self.regression = submodel
+				self.regression = BboxRegressionSubmodel(**submodel['details'])
 				continue
 			elif submodel['category'] == 'default_classification':
 				from .classification import ClassificationSubmodel
-				submodel['class'] = ClassificationSubmodel
-				self.classification = submodel
+				self.classification = ClassificationSubmodel(**submodel['details'])
 				continue
 			else:
 				# Parse submodels from external package.
@@ -74,21 +76,29 @@ class SubmodelsManager(object):
 		if not self.regression:
 			raise ValueError("Could not find main regression submodel.")
 
-	def create(self):
+	def create(self) -> List[Tuple[str, tf.keras.Model]]:
 		""" Initialize the submodels classes that were provided.
 		"""
-		# Initialize main regression and classification submodels.
-		regression     = self.regression['class'](self.regression['details'])
-		classification = self.classification['class'](self.classification['details'])
-
 		# Initialize and append all provided submodels.
 		submodels = []
-		submodels.append(regression)
-		submodels.append(classification)
+		submodels.append((self.regression.get_name(), self.regression.create()))
+		submodels.append((self.classification.get_name(), self.classification.create()))
 		for submodel in self.additional_submodels:
-			submodels.append(submodel['class'](submodel['details']))
+			submodels.append((submodel.get_name(), submodel.create()))
 
 		return submodels
+
+	def losses(self) -> Dict[str, Callable[[tf.Tensor, tf.Tensor], tf.Tensor]]:
+		""" Initialize the submodels classes that were provided.
+		"""
+		# Initialize and append all provided submodels.
+		losses = {}
+		losses[self.regression.get_name()] = self.regression.loss()
+		losses[self.classification.get_name()] = self.classification.loss()
+		for submodel in self.additional_submodels:
+			losses[submodel.get_name()] = submodel.loss()
+
+		return losses
 
 	#def get_evaluation(self):
 	#	""" Get evaluation procedure from submodels, or use default.

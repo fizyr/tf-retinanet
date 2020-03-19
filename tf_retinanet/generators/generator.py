@@ -17,7 +17,8 @@ limitations under the License.
 import numpy as np
 import random
 import warnings
-from typing import List, Tuple
+from typing import List, Tuple, Callable
+from typing import Generator as GeneratorType
 
 import tensorflow as tf
 
@@ -34,6 +35,7 @@ from ..utils.image import (
 	apply_transform,
 	preprocess_image,
 	resize_image,
+	VisualEffect,
 )
 from ..utils.transform import transform_aabb
 
@@ -44,17 +46,17 @@ class Generator(tf.keras.utils.Sequence):
 
 	def __init__(
 		self,
-		transform_generator=None,
-		visual_effect_generator=None,
+		transform_generator: GeneratorType[np.ndarray, None, None] = None,
+		visual_effect_generator: GeneratorType[VisualEffect, None, None] = None,
 		batch_size: int = 1,
 		group_method: str = 'ratio',  # one of 'none', 'random', 'ratio'
 		shuffle_groups: bool = True,
 		image_min_side: int = 800,
 		image_max_side: int = 1333,
-		transform_parameters=None,
+		transform_parameters: TransformParameters = None,
 		compute_anchor_targets=anchor_targets_bbox,
 		compute_shapes=guess_shapes,
-		preprocess_image=preprocess_image,
+		preprocess_image: Callable[[np.ndarray], np.ndarray] = preprocess_image,
 		anchors_config: dict = None
 	):
 		""" Initialize Generator object.
@@ -98,9 +100,11 @@ class Generator(tf.keras.utils.Sequence):
 	def __from_config__(
 		self,
 		config: dict,
-		preprocess_image=preprocess_image,
-		compute_anchor_targets=anchor_targets_bbox
-	) -> Generator:
+		preprocess_image: Callable[[np.ndarray], np.ndarray] = preprocess_image,
+		compute_anchor_targets=anchor_targets_bbox,
+		transform_generator=None,
+		visual_effect_generator=None
+	):
 		""" Initialize Generator object from a configuration.
 		Args
 			config                 : Configuration for the generator.
@@ -109,13 +113,13 @@ class Generator(tf.keras.utils.Sequence):
 		"""
 		Generator.__init__(
 			self,
-			transform_generator     = config['transform_generator_class'],
-			visual_effect_generator = config['visual_effect_generator_class'],
+			transform_generator     = transform_generator,
+			visual_effect_generator = visual_effect_generator,
 			batch_size              = config['batch_size'],
 			group_method            = config['group_method'],
 			shuffle_groups          = config['shuffle_groups'],
 			image_min_side          = config['image_min_side'],
-			transform_parameters    = config['transform_parameters_class'],
+			transform_parameters    = None,  # TODO: Make this configurable.
 			anchors_config          = config['anchors'],
 			preprocess_image        = preprocess_image,
 			compute_anchor_targets  = compute_anchor_targets

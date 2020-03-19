@@ -19,6 +19,7 @@ limitations under the License.
 import argparse
 import os
 import sys
+from typing import List
 
 import tensorflow as tf
 
@@ -38,7 +39,7 @@ from ..utils.gpu    import setup_gpu
 from ..utils.config import dump_yaml, make_training_config
 
 
-def parse_args(args):
+def parse_args(args: List[str]) -> argparse.Namespace:
 	""" Parse the command line arguments.
 	"""
 	parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
@@ -75,7 +76,7 @@ def parse_args(args):
 	return parser.parse_args(args)
 
 
-def main(args=None):
+def main(args: List[str] = None):
 	# Parse command line arguments.
 	if args is None:
 		args = sys.argv[1:]
@@ -88,14 +89,15 @@ def main(args=None):
 	setup_gpu(config['train']['gpu'])
 
 	# Get the submodels manager.
-	submodels_manager = models.submodels.SubmodelsManager(config['submodels'])
+	submodels_manager = models.submodels.SubmodelsManager(config['submodels']['retinanet'])
 
 	# Get the backbone.
-	backbone = get_backbone(config['backbone'])
+	backbone = get_backbone(config['backbone']['name'], config['backbone']['details'])
 
 	# Get the generators and the submodels updated with info of the generators.
 	generators, submodels = get_generators(
-		config['generator'],
+		config['generator']['name'],
+		config['generator']['details'],
 		submodels_manager,
 		preprocess_image=backbone.preprocess_image
 	)
@@ -140,9 +142,8 @@ def main(args=None):
 	# Print model.
 	print(training_model.summary())
 
-	loss = {}
-	for submodel in submodels:
-		loss[submodel.get_name()] = submodel.loss()
+	# Create the loss functions.
+	loss = submodels_manager.losses()
 
 	# Compile model.
 	training_model.compile(

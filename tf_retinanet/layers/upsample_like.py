@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List
+
 import tensorflow as tf
 
 
@@ -21,7 +23,7 @@ class UpsampleLike(tf.keras.layers.Layer):
 	""" Keras layer for upsampling a Tensor to be the same shape as another Tensor.
 	"""
 
-	def call(self, inputs, **kwargs):
+	def call(self, inputs: List[tf.Tensor], **kwargs) -> tf.Tensor:
 		""" Upsamples the tensor.
 		Args
 			inputs : List of [source, target] tensors.
@@ -30,13 +32,13 @@ class UpsampleLike(tf.keras.layers.Layer):
 		target_shape = tf.keras.backend.shape(target)
 		if tf.keras.backend.image_data_format() == 'channels_first':
 			source = tf.transpose(source, (0, 2, 3, 1))
-			output = tf.image.resize(source, (target_shape[2], target_shape[3]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+			output = tf.compat.v1.image.resize_images(source, (target_shape[2], target_shape[3]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 			output = tf.transpose(output, (0, 3, 1, 2))
 			return output
 		else:
 			return tf.image.resize(source, (target_shape[1], target_shape[2]), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
-	def compute_output_shape(self, input_shape):
+	def compute_output_shape(self, input_shape: List[tf.Tensor]) -> tuple:
 		""" Computes the output shapes given the input shapes.
 		Args
 			input_shape : List of input shapes [boxes, classification, other[0], other[1], ...].

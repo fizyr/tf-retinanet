@@ -32,15 +32,17 @@ def get_callbacks(
 	validation_generator: Generator = None,
 	evaluation_callback: Generator = None,
 ) -> List[tf.keras.callbacks.Callback]:
-	""" Returns the callbacks indicated in the config.
+	""" Returns the callbacks used for training.
+
 	Args
 		snapshots_path      : The path to save snapshots to.
 		project_name        : The name of the project, which will be used to create a directory.
 		model               : The used model.
-		prediction_model    : The used prediction model.
 		training_model      : The used training model.
+		prediction_model    : The used prediction model.
 		validation_generator: Generator used during validation.
 		evaluation_callback : Callback used to perform evaluation.
+
 	Returns
 		The indicated callbacks.
 	"""

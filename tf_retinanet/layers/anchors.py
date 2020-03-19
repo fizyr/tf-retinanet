@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List
+
 import tensorflow as tf
 import numpy as np
 
 from ..utils import anchors as utils_anchors
 from .. import backend
 
-
 class Anchors(tf.keras.layers.Layer):
 	""" Keras layer for generating achors for a given shape.
 	"""
 
-	def __init__(self, size, stride, ratios=None, scales=None, *args, **kwargs):
+	def __init__(self, size: List[int], stride: List[int], ratios: np.ndarray = None, scales: np.ndarray = None, *args, **kwargs):
 		""" Initializer for an Anchors layer.
 		Args
 			size: The base size of the anchors to generate.
@@ -40,12 +41,8 @@ class Anchors(tf.keras.layers.Layer):
 
 		if ratios is None:
 			self.ratios  = utils_anchors.AnchorParameters.default.ratios
-		elif isinstance(ratios, list):
-			self.ratios  = np.array(ratios)
 		if scales is None:
 			self.scales  = utils_anchors.AnchorParameters.default.scales
-		elif isinstance(scales, list):
-			self.scales  = np.array(scales)
 
 		self.num_anchors = len(self.ratios) * len(self.scales)
 		self.anchors     = utils_anchors.generate_anchors(
@@ -54,9 +51,9 @@ class Anchors(tf.keras.layers.Layer):
 			scales=self.scales,
 		).astype(np.float32)
 
-		super(Anchors, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
-	def call(self, inputs, **kwargs):
+	def call(self, inputs: tf.Tensor, **kwargs) -> tf.Tensor:
 		features = inputs
 		features_shape = tf.keras.backend.shape(features)
 
@@ -69,7 +66,7 @@ class Anchors(tf.keras.layers.Layer):
 
 		return anchors
 
-	def compute_output_shape(self, input_shape):
+	def compute_output_shape(self, input_shape: tf.Tensor) -> tuple:
 		if None not in input_shape[1:]:
 			if tf.keras.backend.image_data_format() == 'channels_first':
 				total = np.prod(input_shape[2:4]) * self.num_anchors
@@ -80,7 +77,7 @@ class Anchors(tf.keras.layers.Layer):
 		else:
 			return (input_shape[0], None, 4)
 
-	def get_config(self):
+	def get_config(self) -> dict:
 		""" Gets the configuration of this layer.
 		Returns
 			Dictionary containing the parameters of this layer.

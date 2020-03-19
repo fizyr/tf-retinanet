@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,19 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List
+
 import tensorflow as tf
 
 
 def filter_detections(
-	boxes,
-	classification,
-	other                 = [],
-	class_specific_filter = True,
-	nms                   = True,
-	score_threshold       = 0.05,
-	max_detections        = 300,
-	nms_threshold         = 0.5
-):
+	boxes: tf.Tensor,
+	classification: tf.Tensor,
+	other: List[tf.Tensor]       = [],
+	class_specific_filter: bool  = True,
+	nms: bool                    = True,
+	score_threshold: float       = 0.05,
+	max_detections: int          = 300,
+	nms_threshold: float         = 0.5
+) -> List[tf.Tensor]:
 	""" Filter detections using the boxes and classification values.
 	Args
 		boxes                 : Tensor of shape (num_boxes, 4) containing the boxes in (x1, y1, x2, y2) format.
@@ -45,7 +47,7 @@ def filter_detections(
 		other[i] is shaped (max_detections, ...) and contains the filtered other[i] data.
 		In case there are less than max_detections detections, the tensors are padded with -1's.
 	"""
-	def _filter_detections(scores, labels):
+	def _filter_detections(scores: tf.Tensor, labels: tf.Tensor) -> tf.Tensor:
 		# Threshold based on score.
 		indices = tf.where(tf.keras.backend.greater(scores, score_threshold))
 
@@ -119,12 +121,12 @@ class FilterDetections(tf.keras.layers.Layer):
 
 	def __init__(
 		self,
-		nms                   = True,
-		class_specific_filter = True,
-		nms_threshold         = 0.5,
-		score_threshold       = 0.05,
-		max_detections        = 300,
-		parallel_iterations   = 32,
+		nms: bool                    = True,
+		class_specific_filter: bool  = True,
+		nms_threshold: float         = 0.5,
+		score_threshold: float       = 0.05,
+		max_detections: int          = 300,
+		parallel_iterations: int     = 32,
 		**kwargs
 	):
 		""" Filters detections using score threshold, NMS and selecting the top-k detections.
@@ -142,9 +144,9 @@ class FilterDetections(tf.keras.layers.Layer):
 		self.score_threshold       = score_threshold
 		self.max_detections        = max_detections
 		self.parallel_iterations   = parallel_iterations
-		super(FilterDetections, self).__init__(**kwargs)
+		super().__init__(**kwargs)
 
-	def call(self, inputs, **kwargs):
+	def call(self, inputs: List[tf.Tensor], **kwargs) -> List[tf.Tensor]:
 		""" Constructs the NMS graph.
 		Args
 			inputs : List of [boxes, classification, other[0], other[1], ...] tensors.
@@ -154,7 +156,7 @@ class FilterDetections(tf.keras.layers.Layer):
 		other          = inputs[2:]
 
 		# Wrap nms with our parameters.
-		def _filter_detections(args):
+		def _filter_detections(args: List[tf.Tensor]):
 			boxes          = args[0]
 			classification = args[1]
 			other          = args[2]
@@ -180,7 +182,7 @@ class FilterDetections(tf.keras.layers.Layer):
 
 		return outputs
 
-	def compute_output_shape(self, input_shape):
+	def compute_output_shape(self, input_shape: List[tf.Tensor]) -> List[tuple]:
 		""" Computes the output shapes given the input shapes.
 		Args
 			input_shape : List of input shapes [boxes, classification, other[0], other[1], ...].
@@ -196,17 +198,17 @@ class FilterDetections(tf.keras.layers.Layer):
 			tuple([input_shape[i][0], self.max_detections] + list(input_shape[i][2:])) for i in range(2, len(input_shape))
 		]
 
-	def compute_mask(self, inputs, mask=None):
+	def compute_mask(self, inputs: List[tf.Tensor], mask=None):
 		""" This is required in Keras when there is more than 1 output.
 		"""
 		return (len(inputs) + 1) * [None]
 
-	def get_config(self):
+	def get_config(self) -> dict:
 		""" Gets the configuration of this layer.
 		Returns
 			Dictionary containing the parameters of this layer.
 		"""
-		config = super(FilterDetections, self).get_config()
+		config = super().get_config()
 		config.update({
 			'nms'                   : self.nms,
 			'class_specific_filter' : self.class_specific_filter,

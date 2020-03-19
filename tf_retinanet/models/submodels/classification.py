@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -83,9 +83,9 @@ class ClassificationSubmodel(Submodel):
 	"""
 	def __init__(
 		self,
+		num_classes: int,
+		num_anchors: int,
 		name: str = 'classification',
-		num_classes: int = 0,
-		num_anchors: int = 9,
 	):
 		""" Constructor for classification submodel.
 		Args
@@ -99,7 +99,7 @@ class ClassificationSubmodel(Submodel):
 		self.num_classes = num_classes
 		self.num_anchors = num_anchors
 
-		super(ClassificationSubmodel, self).__init__()
+		super().__init__()
 
 	def get_name(self):
 		""" Return the name of the submodel.

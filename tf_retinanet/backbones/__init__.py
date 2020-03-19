@@ -24,10 +24,7 @@ class Backbone():
 	""" This class stores additional information on backbones.
 	"""
 	def __init__(self):
-		""" Construct a backbone from a configuration dict.
-
-		Args
-			modifer: Lambda function for modifying the backbone before using it.
+		""" Construct a backbone.
 		"""
 		# a dictionary mapping custom layer names to the correct classes
 		from .. import layers
@@ -64,6 +61,5 @@ def get_backbone(name: str, details: dict) -> Backbone:
 	Returns
 		The specified backbone.
 	"""
-	backbone_pkg = import_package(config['name'], 'tf_retinanet_backbones')
-
-	return backbone_pkg.from_config(config['details'])
+	backbone_pkg = import_package(name, 'tf_retinanet_backbones')
+	return backbone_pkg.from_config(details)

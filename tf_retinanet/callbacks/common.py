@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,28 +35,28 @@ class RedirectModel(tf.keras.callbacks.Callback):
 		callback: tf.keras.callbacks.Callback,
 		model: tf.keras.Model
 	):
-		super(RedirectModel, self).__init__()
+		super().__init__()
 
 		self.callback = callback
 		self.redirect_model = model
 
-	def on_epoch_begin(self, epoch: int, logs=None):
+	def on_epoch_begin(self, epoch: int, logs: dict = None):
 		self.callback.on_epoch_begin(epoch, logs=logs)
 
-	def on_epoch_end(self, epoch: int, logs=None):
+	def on_epoch_end(self, epoch: int, logs: dict = None):
 		self.callback.on_epoch_end(epoch, logs=logs)
 
-	def on_batch_begin(self, batch: int, logs=None):
+	def on_batch_begin(self, batch: int, logs: dict = None):
 		self.callback.on_batch_begin(batch, logs=logs)
 
-	def on_batch_end(self, batch: int, logs=None):
+	def on_batch_end(self, batch: int, logs: dict = None):
 		self.callback.on_batch_end(batch, logs=logs)
 
-	def on_train_begin(self, logs=None):
+	def on_train_begin(self, logs: dict = None):
 		# Overwrite the model with our custom model.
 		self.callback.set_model(self.redirect_model)
 
 		self.callback.on_train_begin(logs=logs)
 
-	def on_train_end(self, logs=None):
+	def on_train_end(self, logs: dict = None):
 		self.callback.on_train_end(logs=logs)

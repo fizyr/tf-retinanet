@@ -19,6 +19,7 @@ limitations under the License.
 import argparse
 import os
 import sys
+from typing import List
 
 
 # Allow relative imports when being executed as script.
@@ -36,7 +37,7 @@ from ..utils.gpu     import setup_gpu
 from ..utils.config  import make_conversion_config
 
 
-def parse_args(args):
+def parse_args(args: List[str]) -> argparse.Namespace:
 	""" Parse the command line arguments.
 	"""
 	parser = argparse.ArgumentParser(description='Script for converting a training model to an inference model.')
@@ -55,7 +56,7 @@ def parse_args(args):
 	return parser.parse_args(args)
 
 
-def main(args=None, config=None):
+def main(args: List[str] = None, config: dict = None):
 	# Parse arguments.
 	if args is None:
 		args = sys.argv[1:]
@@ -76,7 +77,7 @@ def main(args=None, config=None):
 	submodels_manager = models.submodels.SubmodelsManager(config['submodels'])
 
 	# Get the backbone.
-	backbone = get_backbone(config['backbone'])
+	backbone = get_backbone(config['backbone']['name'], config['backbone']['details'])
 
 	# Get the generators and the submodels updated with info of the generators.
 	generators, submodels = get_generators(

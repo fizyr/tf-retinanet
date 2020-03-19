@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,9 +54,9 @@ class Evaluate(tf.keras.callbacks.Callback):
 		self.weighted_average = weighted_average
 		self.verbose          = verbose
 
-		super(Evaluate, self).__init__()
+		super().__init__()
 
-	def on_epoch_end(self, epoch: int, logs=None):
+	def on_epoch_end(self, epoch: int, logs: dict = None):
 		""" Run the evaluation callback at the end of a given epoch.
 		"""
 		logs = logs or {}
@@ -86,7 +86,6 @@ class Evaluate(tf.keras.callbacks.Callback):
 			self.mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
 
 		if self.tensorboard:
-			import tensorflow as tf
 			if tf.version.VERSION < '2.0.0' and self.tensorboard.writer:
 				summary = tf.Summary()
 				summary_value = summary.value.add()

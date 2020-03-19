@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -74,9 +74,9 @@ class BboxRegressionSubmodel(Submodel):
 	"""
 	def __init__(
 		self,
+		num_values: int,
+		num_anchors: int,
 		name: str = 'bbox_regression',
-		num_values: int = 4,
-		num_anchors: int = 9,
 	):
 		""" Constructor for bbox regression submodel.
 		Args
@@ -91,7 +91,7 @@ class BboxRegressionSubmodel(Submodel):
 		self.num_values  = num_values
 		self.num_anchors = num_anchors
 
-		super(BboxRegressionSubmodel, self).__init__()
+		super().__init__()
 
 	def get_name(self):
 		""" Return the name of the submodel.
@@ -101,7 +101,7 @@ class BboxRegressionSubmodel(Submodel):
 	def __repr__(self):
 		""" Return a description of the model.
 		"""
-		return 'BboxRegressionSubmodel({})'.format(str(self.values))
+		return 'BboxRegressionSubmodel({})'.format(str(self.num_values))
 
 	def size(self):
 		""" Number of regression values.
