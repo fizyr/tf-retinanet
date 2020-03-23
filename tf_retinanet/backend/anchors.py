@@ -62,6 +62,7 @@ def bbox_transform_inv(boxes: tf.Tensor, deltas: tf.Tensor, mean: np.ndarray = N
 		deltas: Tensor of same shape as boxes. These deltas (d_x1, d_y1, d_x2, d_y2) are a factor of the width/height.
 		mean  : The mean value used when computing deltas (defaults to [0, 0, 0, 0]).
 		std   : The standard deviation used when computing deltas (defaults to [0.2, 0.2, 0.2, 0.2]).
+
 	Returns
 		A Tensor of the same shape as boxes, but with deltas applied to each box.
 		The mean and std are used during training to normalize the regression values (networks love normalization).

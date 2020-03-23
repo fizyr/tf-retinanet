@@ -18,7 +18,7 @@ from . import retinanet  # noqa: F401
 from . import submodels  # noqa: F401
 
 
-def load_model(filepath, backbone, submodels, custom_objects=None):
+def load_model(filepath, backbone, custom_objects=None):
 	""" Loads a retinanet model using the correct custom objects.
 	Args
 		filepath : one of the following:
@@ -40,9 +40,5 @@ def load_model(filepath, backbone, submodels, custom_objects=None):
 
 	# Update custom_objects with the backbone custom objects.
 	custom_objects.update(backbone.custom_objects)
-
-	# Update custom_objects with the custom objects of each submodel.
-	for submodel in submodels:
-		custom_objects.update(submodel.get_custom_objects())
 
 	return tf.keras.models.load_model(filepath, custom_objects=custom_objects)

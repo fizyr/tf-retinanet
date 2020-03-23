@@ -86,7 +86,8 @@ def main(args: List[str] = None):
 	config = make_training_config(args)
 
 	# Set gpu configuration.
-	setup_gpu(config['train']['gpu'])
+	if args.gpu:
+		setup_gpu(args.gpu)
 
 	# Get the submodels manager.
 	submodels_manager = models.submodels.SubmodelsManager(config['submodels']['retinanet'])

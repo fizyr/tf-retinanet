@@ -31,6 +31,7 @@ def get_transform_generator(transform_generator_type: str) -> GeneratorType[np.n
 		transform_generator_type: Type of the transform generator.
 			'basic':  a transform generator which only flips image about x axis.
 			'random': a transform generator which applies more than one transformation.
+
 	Returns
 		The transform generator.
 	"""
@@ -61,6 +62,7 @@ def get_visual_effect_generator(visual_effect_generator_type: str) -> GeneratorT
 	Args
 		visual_effect_generator_type: Type of the visual effect generator.
 			'random': a visual effect generator which applies more than one visual effects.
+
 	Returns
 		The visual effect generator.
 	"""

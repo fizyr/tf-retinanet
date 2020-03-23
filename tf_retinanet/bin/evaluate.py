@@ -22,7 +22,6 @@ import sys
 
 import tensorflow as tf
 
-
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
 	sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -74,17 +73,19 @@ def main(args=None):
 	config = make_evaluation_config(args)
 
 	# Set gpu configuration.
-	setup_gpu(config['evaluate']['gpu'])
+	if args.gpu:
+		setup_gpu(args.gpu)
 
 	# Get the submodels manager.
-	submodels_manager = models.submodels.SubmodelsManager(config['submodels'])
+	submodels_manager = models.submodels.SubmodelsManager(config['submodels']['retinanet'])
 
 	# Get the backbone.
-	backbone = get_backbone(config['backbone'])
+	backbone = get_backbone(config['backbone']['name'], config['backbone']['details'])
 
 	# Get generators and submodels.
-	generators, submodels = get_generators(
-		config['generator'],
+	generators = get_generators(
+		config['generator']['name'],
+		config['generator']['details'],
 		submodels_manager,
 		preprocess_image=backbone.preprocess_image
 	)
@@ -102,7 +103,7 @@ def main(args=None):
 	# Load model.
 	if config['evaluate']['weights'] is None:
 		raise ValueError('Could not get weights.')
-	model = models.load_model(config['evaluate']['weights'], backbone=backbone, submodels=submodels)
+	model = models.load_model(config['evaluate']['weights'], backbone=backbone, custom_objects=submodels_manager.custom_objects())
 
 	# Create prediction model.
 	if config['evaluate']['convert_model']:

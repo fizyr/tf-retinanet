@@ -58,6 +58,7 @@ def get_backbone(name: str, details: dict) -> Backbone:
 	Args
 		name: Name of the backbone that should be imported.
 		details: Configuration for the backbone.
+
 	Returns
 		The specified backbone.
 	"""

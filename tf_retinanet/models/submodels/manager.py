@@ -89,7 +89,7 @@ class SubmodelsManager():
 		return submodels
 
 	def losses(self) -> Dict[str, Callable[[tf.Tensor, tf.Tensor], tf.Tensor]]:
-		""" Initialize the submodels classes that were provided.
+		""" Constructs the loss functions for the submodels.
 		"""
 		# Initialize and append all provided submodels.
 		losses = {}
@@ -99,6 +99,17 @@ class SubmodelsManager():
 			losses[submodel.get_name()] = submodel.loss()
 
 		return losses
+
+	def custom_objects(self) -> dict:
+		""" Gathers the custom objects from the submodels.
+		"""
+		# Initialize and append all provided submodels.
+		custom_objects = {}
+		custom_objects.update(self.regression.get_custom_objects())
+		custom_objects.update(self.classification.get_custom_objects())
+		for submodel in self.additional_submodels:
+			custom_objects.update(submodel.get_custom_objects())
+		return custom_objects
 
 	#def get_evaluation(self):
 	#	""" Get evaluation procedure from submodels, or use default.
