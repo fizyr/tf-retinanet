@@ -95,6 +95,7 @@ def get_generators(
 		details:           Details of the generator.
 		submodels_manager: Manager containing details for the creation of the submodels.
 		preprocess_image:  Function used to preprocess images in the generator.
+
 	Returns
 		The specified generators and submodels.
 	"""

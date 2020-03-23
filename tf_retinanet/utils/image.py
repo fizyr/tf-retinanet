@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import division
+from typing import List, Tuple, Generator
 import numpy as np
 import cv2
 from PIL import Image
@@ -22,7 +22,7 @@ from PIL import Image
 from .transform import change_transform_origin
 
 
-def read_image_bgr(path):
+def read_image_bgr(path: str) -> np.ndarray:
 	""" Read an image in BGR format.
 	Args
 		path: Path to the image.
@@ -31,7 +31,7 @@ def read_image_bgr(path):
 	return image[:, :, ::-1].copy()
 
 
-def preprocess_image(x, mode='caffe'):
+def preprocess_image(x: np.ndarray, mode: str = 'caffe') -> np.ndarray:
 	""" Preprocess an image by subtracting the ImageNet mean.
 	Args
 		x: np.array of shape (None, None, 3) or (3, None, None).
@@ -59,7 +59,7 @@ def preprocess_image(x, mode='caffe'):
 	return x
 
 
-def adjust_transform_for_image(transform, image, relative_translation):
+def adjust_transform_for_image(transform: np.ndarray, image: np.ndarray, relative_translation: bool) -> np.ndarray:
 	""" Adjust a transformation for a specific image.
 	The translation of the matrix will be scaled with the size of the image.
 	The linear part of the transformation will adjusted so that the origin of the transformation will be at the center of the image.
@@ -85,21 +85,21 @@ class TransformParameters:
 		interpolation        : One of: 'nearest', 'linear', 'cubic', 'area', 'lanczos4'
 		cval                 : Fill value to use with fill_mode='constant'
 		relative_translation : If true (the default), interpret translation as a factor of the image size.
-								If false, interpret it as absolute pixels.
+			If false, interpret it as absolute pixels.
 	"""
 	def __init__(
 		self,
-		fill_mode            = 'nearest',
-		interpolation        = 'linear',
-		cval                 = 0,
-		relative_translation = True,
+		fill_mode: str             = 'nearest',
+		interpolation: str         = 'linear',
+		cval: int                  = 0,
+		relative_translation: bool = True,
 	):
 		self.fill_mode            = fill_mode
 		self.cval                 = cval
 		self.interpolation        = interpolation
 		self.relative_translation = relative_translation
 
-	def cvBorderMode(self):
+	def cv_border_mode(self) -> int:
 		if self.fill_mode == 'constant':
 			return cv2.BORDER_CONSTANT
 		if self.fill_mode == 'nearest':
@@ -109,7 +109,7 @@ class TransformParameters:
 		if self.fill_mode == 'wrap':
 			return cv2.BORDER_WRAP
 
-	def cvInterpolation(self):
+	def cv_interpolation(self) -> int:
 		if self.interpolation == 'nearest':
 			return cv2.INTER_NEAREST
 		if self.interpolation == 'linear':
@@ -122,7 +122,7 @@ class TransformParameters:
 			return cv2.INTER_LANCZOS4
 
 
-def apply_transform(matrix, image, params):
+def apply_transform(matrix: np.ndarray, image: np.ndarray, params: TransformParameters) -> np.ndarray:
 	"""
 	Apply a transformation to an image.
 	The origin of transformation is at the top left corner of the image.
@@ -138,13 +138,13 @@ def apply_transform(matrix, image, params):
 		matrix[:2, :],
 		dsize       = (image.shape[1], image.shape[0]),
 		flags       = params.cvInterpolation(),
-		borderMode  = params.cvBorderMode(),
+		borderMode  = params.cv_border_mode(),
 		borderValue = params.cval,
 	)
 	return output
 
 
-def compute_resize_scale(image_shape, min_side=800, max_side=1333):
+def compute_resize_scale(image_shape: List[int], min_side: int = 800, max_side: int = 1333) -> float:
 	""" Compute an image scale such that the image size is constrained to min_side and max_side.
 	Args
 		min_side: The image's min side will be equal to min_side after resizing.
@@ -168,7 +168,7 @@ def compute_resize_scale(image_shape, min_side=800, max_side=1333):
 	return scale
 
 
-def resize_image(img, min_side=800, max_side=1333):
+def resize_image(img: np.ndarray, min_side: int = 800, max_side: int = 1333) -> np.ndarray:
 	""" Resize an image such that the size is constrained to min_side and max_side.
 	Args
 		min_side: The image's min side will be equal to min_side after resizing.
@@ -208,7 +208,7 @@ def _check_range(val_range, min_val=None, max_val=None):
 		raise ValueError('invalid interval upper bound')
 
 
-def _clip(image):
+def _clip(image: np.ndarray) -> np.ndarray:
 	"""
 	Clip and convert an image to np.uint8.
 	Args
@@ -227,17 +227,17 @@ class VisualEffect:
 	"""
 	def __init__(
 		self,
-		contrast_factor,
-		brightness_delta,
-		hue_delta,
-		saturation_factor,
+		contrast_factor: float,
+		brightness_delta: float,
+		hue_delta: float,
+		saturation_factor: float,
 	):
 		self.contrast_factor = contrast_factor
 		self.brightness_delta = brightness_delta
 		self.hue_delta = hue_delta
 		self.saturation_factor = saturation_factor
 
-	def __call__(self, image):
+	def __call__(self, image: np.ndarray) -> np.ndarray:
 		""" Apply a visual effect on the image.
 		Args
 			image: Image to adjust
@@ -263,11 +263,11 @@ class VisualEffect:
 
 
 def random_visual_effect_generator(
-	contrast_range=(0.9, 1.1),
-	brightness_range=(-.1, .1),
-	hue_range=(-0.05, 0.05),
-	saturation_range=(0.95, 1.05)
-):
+	contrast_range: Tuple[float, float]   = (0.9, 1.1),
+	brightness_range: Tuple[float, float] = (-.1, .1),
+	hue_range: Tuple[float, float]        = (-0.05, 0.05),
+	saturation_range: Tuple[float, float] = (0.95, 1.05)
+) -> Generator[VisualEffect, None, None]:
 	""" Generate visual effect parameters uniformly sampled from the given intervals.
 	Args
 		contrast_factor:   A factor interval for adjusting contrast. Should be between 0 and 3.
@@ -294,7 +294,7 @@ def random_visual_effect_generator(
 	return _generate()
 
 
-def adjust_contrast(image, factor):
+def adjust_contrast(image: np.ndarray, factor: float) -> np.ndarray:
 	""" Adjust contrast of an image.
 	Args
 		image: Image to adjust.
@@ -304,7 +304,7 @@ def adjust_contrast(image, factor):
 	return _clip((image - mean) * factor + mean)
 
 
-def adjust_brightness(image, delta):
+def adjust_brightness(image: np.ndarray, delta: float) -> np.ndarray:
 	""" Adjust brightness of an image
 	Args
 		image: Image to adjust.
@@ -313,7 +313,7 @@ def adjust_brightness(image, delta):
 	return _clip(image + delta * 255)
 
 
-def adjust_hue(image, delta):
+def adjust_hue(image: np.ndarray, delta: float) -> np.ndarray:
 	""" Adjust hue of an image.
 	Args
 		image: Image to adjust.
@@ -324,7 +324,7 @@ def adjust_hue(image, delta):
 	return image
 
 
-def adjust_saturation(image, factor):
+def adjust_saturation(image, factor) -> np.ndarray:
 	""" Adjust saturation of an image.
 	Args
 		image: Image to adjust.

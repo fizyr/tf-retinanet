@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import argparse
 import dill
 import yaml
 import os
@@ -29,18 +30,15 @@ from .defaults import (
 )
 
 
-def parse_yaml(path):
+def parse_yaml(path: str) -> dict:
 	""" Parse a YAML config file to a dictionary.
 	"""
 	with open(path, 'r') as stream:
-		try:
-			config = yaml.safe_load(stream)
-			return config
-		except yaml.YAMLError as exc:
-			raise(exc)
+		config = yaml.safe_load(stream)
+		return config
 
 
-def clean_dict(config):
+def clean_dict(config: dict) -> dict:
 	""" Make sure that all values of a dictionary are dumpable to YAML.
 		If they are not, replace them with their type.
 	"""
@@ -54,7 +52,7 @@ def clean_dict(config):
 	return config
 
 
-def dump_yaml(config):
+def dump_yaml(config: dict):
 	""" Dump config as YAML in the path
 		shapshot_path + project_name + 'config.yaml'
 	"""
@@ -67,7 +65,7 @@ def dump_yaml(config):
 		yaml.dump(config, dump_config, default_flow_style=False)
 
 
-def set_defaults(config, default_config):
+def set_defaults(config: dict, default_config: dict) -> dict:
 	""" Set default values where keys are missing in the current config.
 	Args
 		config         : Dictionary containing parsed configuration settings.
@@ -95,7 +93,7 @@ def set_in_dict(datadict, maplist, value):
 	get_from_dict(datadict, maplist[:-1])[maplist[-1]] = value
 
 
-def parse_additional_options(config, options):
+def parse_additional_options(config, options) -> dict:
 	""" Parse additional options from command line and overwrite on config.
 	Args
 		config  : Dictionary containing configuration settings.
@@ -110,7 +108,7 @@ def parse_additional_options(config, options):
 	return config
 
 
-def make_training_config(args):
+def make_training_config(args: argparse.Namespace) -> dict:
 	""" Create training config by parsing args from command line and YAML config file, filling the rest with default values.
 	Args
 		args : Arguments parsed from command line.
@@ -175,7 +173,7 @@ def make_training_config(args):
 	return config
 
 
-def make_evaluation_config(args):
+def make_evaluation_config(args: argparse.Namespace) -> dict:
 	""" Create evaluation config by parsing args from command line and YAML config file, filling the rest with default values.
 	Args
 		args : Arguments parsed from command line.
@@ -218,7 +216,7 @@ def make_evaluation_config(args):
 	return config
 
 
-def make_conversion_config(args):
+def make_conversion_config(args: argparse.Namespace) -> dict:
 	""" Create conversion config by parsing args from command line and YAML config file, filling the rest with default values.
 	Args
 		args: Arguments parsed from command line.
@@ -245,7 +243,7 @@ def make_conversion_config(args):
 	return config
 
 
-def make_debug_config(args):
+def make_debug_config(args: argparse.Namespace) -> dict:
 	""" Create debug config by parsing args from command line and YAML config file, filling the rest with default values.
 	Args
 		args: Arguments parsed from command line.

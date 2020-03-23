@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import Callable
+
 import tensorflow as tf
 
 
-def focal(alpha=0.25, gamma=2.0):
+def focal(alpha: float = 0.25, gamma: float = 2.0) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
 	""" Create a functor for computing the focal loss.
 
 	Args
@@ -63,7 +65,7 @@ def focal(alpha=0.25, gamma=2.0):
 	return _focal
 
 
-def smooth_l1(sigma=3.0):
+def smooth_l1(sigma: float = 3.0) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
 	""" Create a smooth L1 loss functor.
 
 	Args

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from ..generators import Generator
 from .anchors import compute_overlap
 from .visualization import draw_detections, draw_annotations
 
@@ -21,13 +22,14 @@ import tensorflow as tf
 import numpy as np
 import os
 import time
+from typing import List, Tuple
 
 import cv2
 import progressbar
 assert(callable(progressbar.progressbar)), "Using wrong progressbar module, install 'progressbar2' instead."
 
 
-def _compute_ap(recall, precision):
+def _compute_ap(recall: List[float], precision: List[float]):
 	""" Compute the average precision, given the recall and precision curves.
 	Code originally from https://github.com/rbgirshick/py-faster-rcnn.
 	# Arguments
@@ -54,7 +56,13 @@ def _compute_ap(recall, precision):
 	return ap
 
 
-def _get_detections(generator, model, score_threshold=0.05, max_detections=100, save_path=None):
+def _get_detections(
+	generator: Generator,
+	model: tf.keras.Model,
+	score_threshold: float = 0.05,
+	max_detections: int = 100,
+	save_path: str = None
+) -> Tuple[List[List[np.ndarray]], List[float]]:
 	""" Get the detections from the model using the generator.
 	The result is a list of lists such that the size is:
 		all_detections[num_images][num_classes] = detections[num_detections, 4 + num_classes]
@@ -119,7 +127,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 	return all_detections, all_inferences
 
 
-def _get_annotations(generator):
+def _get_annotations(generator: Generator) -> List[List[np.ndarray]]:
 	""" Get the ground truth annotations from the generator.
 	The result is a list of lists such that the size is:
 		all_detections[num_images][num_classes] = annotations[num_detections, 5]
@@ -144,7 +152,7 @@ def _get_annotations(generator):
 	return all_annotations
 
 
-def print_results(generator, average_precisions, inference_time):
+def print_results(generator: Generator, average_precisions: List[float], inference_time: List[float]):
 	""" Print evaluation results.
 	# Arguments
 		generator         : The generator that represents the dataset to evaluate.
@@ -170,13 +178,13 @@ def print_results(generator, average_precisions, inference_time):
 
 
 def evaluate(
-	generator,
-	model,
-	iou_threshold=0.5,
-	score_threshold=0.05,
-	max_detections=100,
-	save_path=None
-):
+	generator: Generator,
+	model: tf.keras.Model,
+	iou_threshold: float = 0.5,
+	score_threshold: float = 0.05,
+	max_detections: int = 100,
+	save_path: str = None
+) -> Dict[int, float]:
 	""" Evaluate a given dataset using a given model.
 	# Arguments
 		generator       : The generator that represents the dataset to evaluate.
@@ -186,7 +194,7 @@ def evaluate(
 		max_detections  : The maximum number of detections to use per image.
 		save_path       : The path to save images with visualized detections to.
 	# Returns
-		A dict mapping class names to mAP scores.
+		A dict mapping class labels to mAP scores.
 	"""
 	# gather all detections and annotations
 	all_detections, all_inferences = _get_detections(generator, model, score_threshold=score_threshold, max_detections=max_detections, save_path=save_path)
@@ -259,3 +267,4 @@ def evaluate(
 		inference_time = np.sum(all_inferences) / generator.size()
 
 	print_results(generator, average_precisions, inference_time)
+	return average_precisions

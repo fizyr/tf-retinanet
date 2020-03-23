@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List, Tuple, Dict, Callable
 import numpy as np
 import tensorflow as tf
 
@@ -52,13 +53,13 @@ AnchorParameters.default = AnchorParameters(
 
 
 def anchor_targets_bbox(
-	anchors,
-	image_group,
-	annotations_group,
-	num_classes,
-	negative_overlap=0.4,
-	positive_overlap=0.5
-):
+	anchors: np.ndarray,
+	image_group: List[np.ndarray],
+	annotations_group: List[dict],
+	num_classes: int,
+	negative_overlap: float = 0.4,
+	positive_overlap: float = 0.5
+) -> Tuple[np.ndarray, np.ndarray]:
 	""" Generate anchor targets for bbox detection.
 	Args
 		anchors: np.array of annotations of shape (N, 4) for (x1, y1, x2, y2).
@@ -115,11 +116,11 @@ def anchor_targets_bbox(
 
 
 def compute_gt_annotations(
-	anchors,
-	annotations,
-	negative_overlap=0.4,
-	positive_overlap=0.5
-):
+	anchors: np.ndarray,
+	annotations: List[dict],
+	negative_overlap: float = 0.4,
+	positive_overlap: float = 0.5
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 	""" Obtain indices of gt annotations with the greatest overlap.
 	Args
 		anchors: np.array of annotations of shape (N, 4) for (x1, y1, x2, y2).
@@ -142,7 +143,7 @@ def compute_gt_annotations(
 	return positive_indices, ignore_indices, argmax_overlaps_inds
 
 
-def layer_shapes(image_shape, model):
+def layer_shapes(image_shape: List[int], model: tf.keras.Model) -> Dict[str, tuple]:
 	"""Compute layer shapes given input image shape and the model.
 	Args
 		image_shape: The shape of the image.
@@ -165,7 +166,7 @@ def layer_shapes(image_shape, model):
 	return shape
 
 
-def make_shapes_callback(model):
+def make_shapes_callback(model: tf.keras.Model) -> List[tuple]:
 	""" Make a function for getting the shape of the pyramid levels.
 	"""
 	def get_shapes(image_shape, pyramid_levels):
@@ -176,7 +177,7 @@ def make_shapes_callback(model):
 	return get_shapes
 
 
-def guess_shapes(image_shape, pyramid_levels):
+def guess_shapes(image_shape: List[int], pyramid_levels: List[int]) -> List[tuple]:
 	"""Guess shapes based on pyramid levels.
 	Args
 		image_shape: The shape of the image.
@@ -190,11 +191,11 @@ def guess_shapes(image_shape, pyramid_levels):
 
 
 def anchors_for_shape(
-	image_shape,
-	pyramid_levels=None,
-	anchor_params=None,
-	shapes_callback=None,
-):
+	image_shape: List[int],
+	pyramid_levels: List[int]                                      = None,
+	anchor_params: AnchorParameters                                = None,
+	shapes_callback: Callable[[List[int], List[int]], List[tuple]] = None,
+) -> np.ndarray:
 	""" Generators anchors for a given shape.
 	Args
 		image_shape: The shape of the image.
@@ -228,7 +229,7 @@ def anchors_for_shape(
 	return all_anchors
 
 
-def shift(shape, stride, anchors):
+def shift(shape: List[int], stride: int, anchors: np.ndarray) -> np.ndarray:
 	""" Produce shifted anchors based on shape of the map and stride size.
 
 	Args
@@ -260,7 +261,7 @@ def shift(shape, stride, anchors):
 	return all_anchors
 
 
-def generate_anchors(base_size=16, ratios=None, scales=None):
+def generate_anchors(base_size: int = 16, ratios: List[float] = None, scales: List[float] = None) -> np.ndarray:
 	"""
 	Generate anchor (reference) windows by enumerating aspect ratios X
 	scales w.r.t. a reference window.
@@ -293,7 +294,7 @@ def generate_anchors(base_size=16, ratios=None, scales=None):
 	return anchors
 
 
-def bbox_transform(anchors, gt_boxes, mean=None, std=None):
+def bbox_transform(anchors: np.ndarray, gt_boxes: np.ndarray, mean: np.ndarray = None, std: np.ndarray = None) -> np.ndarray:
 	""" Compute bounding-box regression targets for an image.
 	"""
 	if mean is None:
@@ -327,7 +328,7 @@ def bbox_transform(anchors, gt_boxes, mean=None, std=None):
 	return targets
 
 
-def parse_anchor_parameters(anchors_config):
+def parse_anchor_parameters(anchors_config: dict) -> AnchorParameters:
 	""" Parse anchors parameters from a dict.
 	"""
 	ratios  = np.array(anchors_config['ratios'], tf.keras.backend.floatx())

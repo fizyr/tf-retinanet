@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List, Tuple, Callable
+
 import cv2
 import numpy as np
 
 from .colors import label_color
 
 
-def draw_box(image, box, color, thickness=2):
+def draw_box(image: np.ndarray, box: List[int], color: Tuple[int], thickness: int = 2):
 	""" Draws a box on an image with a given color.
 
 	# Arguments
@@ -33,7 +35,7 @@ def draw_box(image, box, color, thickness=2):
 	cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]), color, thickness, cv2.LINE_AA)
 
 
-def draw_caption(image, box, caption):
+def draw_caption(image: np.ndarray, box: List[int], caption: str):
 	""" Draws a caption above the box in an image.
 
 	# Arguments
@@ -46,7 +48,7 @@ def draw_caption(image, box, caption):
 	cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
 
 
-def draw_boxes(image, boxes, color, thickness=2):
+def draw_boxes(image: np.ndarray, boxes: List[List[int]], color: Tuple[int], thickness: int = 2):
 	""" Draws boxes on an image with a given color.
 
 	# Arguments
@@ -59,7 +61,15 @@ def draw_boxes(image, boxes, color, thickness=2):
 		draw_box(image, b, color, thickness=thickness)
 
 
-def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None, score_threshold=0.5):
+def draw_detections(
+	image: np.ndarray,
+	boxes: List[List[int]],
+	scores: np.ndarray,
+	labels: np.ndarray,
+	color: List[int]                    = None,
+	label_to_name: Callable[[int], str] = None,
+	score_threshold: float              = 0.5
+):
 	""" Draws detections in an image.
 
 	# Arguments
@@ -82,7 +92,7 @@ def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None
 		draw_caption(image, boxes[i, :], caption)
 
 
-def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
+def draw_annotations(image: np.ndarray, annotations: np.ndarray, color: List[int] = (0, 255, 0), label_to_name: Callable[[int], str] = None):
 	""" Draws annotations in an image.
 
 	# Arguments

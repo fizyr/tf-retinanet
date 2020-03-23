@@ -96,7 +96,7 @@ def main(args: List[str] = None):
 	backbone = get_backbone(config['backbone']['name'], config['backbone']['details'])
 
 	# Get the generators and the submodels updated with info of the generators.
-	generators, submodels = get_generators(
+	generators = get_generators(
 		config['generator']['name'],
 		config['generator']['details'],
 		submodels_manager,
@@ -119,7 +119,7 @@ def main(args: List[str] = None):
 		evaluation_callback = generators['evaluation_callback']
 
 	# Create the model.
-	model = backbone.retinanet(submodels=submodels)
+	model = backbone.retinanet(submodels=submodels_manager.create())
 
 	# If needed load weights.
 	if config['train']['weights'] is not None and config['train']['weights'] != 'imagenet':

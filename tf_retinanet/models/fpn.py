@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List
+
 import tensorflow as tf
 
 from .. import layers
 
 
-def create_pyramid_features(C3, C4, C5, feature_size=256):
+def create_pyramid_features(C3: tf.Tensor, C4: tf.Tensor, C5: tf.Tensor, feature_size: int = 256) -> List[tf.Tensor]:
 	""" Creates the FPN layers on top of the backbone features.
 	Args
 		C3           : Feature stage C3 from the backbone.
@@ -55,7 +57,7 @@ def create_pyramid_features(C3, C4, C5, feature_size=256):
 	return [P3, P4, P5, P6, P7]
 
 
-def build_model_pyramid(name, model, features):
+def build_model_pyramid(name: str, model: tf.keras.Model, features: List[tf.Tensor]) -> tf.Tensor:
 	""" Applies a single submodel to each FPN level.
 	Args
 		name     : Name of the submodel.
@@ -67,7 +69,7 @@ def build_model_pyramid(name, model, features):
 	return tf.keras.layers.Concatenate(axis=1, name=name)([model(f) for f in features])
 
 
-def build_pyramid(models, features):
+def build_pyramid(models: List[tf.keras.Model], features: List[tf.Tensor]) -> List[tf.Tensor]:
 	""" Applies all submodels to each FPN level.
 	Args
 		models   : List of sumodels to run on each pyramid level (by default only regression, classifcation).

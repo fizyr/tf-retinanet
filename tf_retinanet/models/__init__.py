@@ -16,9 +16,10 @@ limitations under the License.
 
 from . import retinanet  # noqa: F401
 from . import submodels  # noqa: F401
+from ..backbones import Backbone
 
 
-def load_model(filepath, backbone, custom_objects=None):
+def load_model(filepath: str, backbone: Backbone, custom_objects: dict = None):
 	""" Loads a retinanet model using the correct custom objects.
 	Args
 		filepath : one of the following:

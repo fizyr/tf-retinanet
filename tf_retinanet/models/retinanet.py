@@ -24,14 +24,14 @@ from .. import layers
 from . import fpn
 
 
-def assert_training_model(model):
+def assert_training_model(model: tf.keras.Model):
 	""" Assert that the model is a training model.
 	"""
 	assert(all(output in model.output_names for output in ['bbox_regression', 'classification'])), \
 		"Input is not a training model (no 'bbox_regression' and 'classification' outputs were found, outputs are: {}).".format(model.output_names)
 
 
-def check_training_model(model):
+def check_training_model(model: tf.keras.Model):
 	""" Check that model is a training model and exit otherwise.
 	"""
 	try:
@@ -42,7 +42,7 @@ def check_training_model(model):
 		sys.exit(1)
 
 
-def build_anchors(anchor_parameters, features):
+def build_anchors(anchor_parameters: AnchorParameters, features: List[tf.Tensor]) -> tf.Tensor:
 	""" Builds anchors for the shape of the features from FPN.
 	Args
 		anchor_parameters : Parameteres that determine how anchors are generated.
@@ -73,7 +73,7 @@ def retinanet(
 	submodels               : List[Tuple[str, tf.keras.Model]],
 	create_pyramid_features : Callable[[List[tf.Tensor]], List[tf.Tensor]] = fpn.create_pyramid_features,
 	name                    : str = 'retinanet'
-):
+) -> tf.keras.Model:
 	""" Construct a RetinaNet model on top of a backbone.
 	This model is the minimum model necessary for training (with the unfortunate exception of anchors as output).
 
@@ -103,13 +103,13 @@ def retinanet(
 
 
 def retinanet_bbox(
-	model                 = None,
-	nms                   = True,
-	class_specific_filter = True,
-	name                  = 'retinanet-bbox',
-	anchor_params         = None,
+	model: tf.keras.Model           = None,
+	nms: bool                       = True,
+	class_specific_filter: bool     = True,
+	name: str                       = 'retinanet-bbox',
+	anchor_params: AnchorParameters = None,
 	**kwargs
-):
+) -> tf.keras.Model:
 	""" Construct a RetinaNet model on top of a backbone and adds convenience functions to output boxes directly.
 
 	This model uses the minimum retinanet model and appends a few layers to compute boxes within the graph.
@@ -170,7 +170,7 @@ def retinanet_bbox(
 	return tf.keras.models.Model(inputs=model.inputs, outputs=detections, name=name)
 
 
-def convert_model(model, nms=True, class_specific_filter=True, anchor_params=None):
+def convert_model(model: tf.keras.Model, nms: bool = True, class_specific_filter: bool = True, anchor_params: AnchorParameters = None):
 	""" Converts a training model to an inference model.
 	Args
 		model                 : A retinanet training model.

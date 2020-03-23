@@ -14,18 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import List, Tuple, Generator
 import numpy as np
 
 DEFAULT_PRNG = np.random
 
 
-def colvec(*args):
+def colvec(*args) -> np.ndarray:
 	""" Create a numpy array representing a column vector.
 	"""
 	return np.array([args]).T
 
 
-def transform_aabb(transform, aabb):
+def transform_aabb(transform: np.ndarray, aabb: List[int]) -> List[int]:
 	""" Apply a transformation to an axis aligned bounding box.
 	The result is a new AABB in the same coordinate system as the original AABB.
 	The new AABB contains all corner points of the original AABB after applying the given transformation.
@@ -36,7 +37,7 @@ def transform_aabb(transform, aabb):
 		x2:        The maximum x value of the AABB.
 		y2:        The maximum y value of the AABB.
 	Returns
-		The new AABB as tuple (x1, y1, x2, y2)
+		The new AABB as list (x1, y1, x2, y2)
 	"""
 	x1, y1, x2, y2 = aabb
 	# Transform all 4 corners of the AABB.
@@ -66,7 +67,7 @@ def _random_vector(min, max, prng=DEFAULT_PRNG):
 	return prng.uniform(min, max)
 
 
-def rotation(angle):
+def rotation(angle: float) -> np.ndarray:
 	""" Construct a homogeneous 2D rotation matrix.
 	Args
 		angle: the angle in radians
@@ -80,7 +81,7 @@ def rotation(angle):
 	])
 
 
-def random_rotation(min, max, prng=DEFAULT_PRNG):
+def random_rotation(min: float, max: float, prng=DEFAULT_PRNG) -> np.ndarray:
 	""" Construct a random rotation between -max and max.
 	Args
 		min:  a scalar for the minimum absolute angle in radians
@@ -92,7 +93,7 @@ def random_rotation(min, max, prng=DEFAULT_PRNG):
 	return rotation(prng.uniform(min, max))
 
 
-def translation(translation):
+def translation(translation: np.ndarray) -> np.ndarray:
 	""" Construct a homogeneous 2D translation matrix.
 	# Arguments
 		translation: the translation 2D vector
@@ -106,7 +107,7 @@ def translation(translation):
 	])
 
 
-def random_translation(min, max, prng=DEFAULT_PRNG):
+def random_translation(min, max, prng=DEFAULT_PRNG) -> np.ndarray:
 	""" Construct a random 2D translation between min and max.
 	Args
 		min:  a 2D vector with the minimum translation for each dimension
@@ -118,7 +119,7 @@ def random_translation(min, max, prng=DEFAULT_PRNG):
 	return translation(_random_vector(min, max, prng))
 
 
-def shear(angle):
+def shear(angle: float) -> np.ndarray:
 	""" Construct a homogeneous 2D shear matrix.
 	Args
 		angle: the shear angle in radians
@@ -132,7 +133,7 @@ def shear(angle):
 	])
 
 
-def random_shear(min, max, prng=DEFAULT_PRNG):
+def random_shear(min, max, prng=DEFAULT_PRNG) -> np.ndarray:
 	""" Construct a random 2D shear matrix with shear angle between -max and max.
 	Args
 		min:  the minimum shear angle in radians.
@@ -144,7 +145,7 @@ def random_shear(min, max, prng=DEFAULT_PRNG):
 	return shear(prng.uniform(min, max))
 
 
-def scaling(factor):
+def scaling(factor: float) -> np.ndarray:
 	""" Construct a homogeneous 2D scaling matrix.
 	Args
 		factor: a 2D vector for X and Y scaling
@@ -158,7 +159,7 @@ def scaling(factor):
 	])
 
 
-def random_scaling(min, max, prng=DEFAULT_PRNG):
+def random_scaling(min, max, prng=DEFAULT_PRNG) -> np.ndarray:
 	""" Construct a random 2D scale matrix between -max and max.
 	Args
 		min:  a 2D vector containing the minimum scaling factor for X and Y.
@@ -170,7 +171,7 @@ def random_scaling(min, max, prng=DEFAULT_PRNG):
 	return scaling(_random_vector(min, max, prng))
 
 
-def random_flip(flip_x_chance, flip_y_chance, prng=DEFAULT_PRNG):
+def random_flip(flip_x_chance, flip_y_chance, prng=DEFAULT_PRNG) -> np.ndarray:
 	""" Construct a transformation randomly containing X/Y flips (or not).
 	Args
 		flip_x_chance: The chance that the result will contain a flip along the X axis.
@@ -185,7 +186,7 @@ def random_flip(flip_x_chance, flip_y_chance, prng=DEFAULT_PRNG):
 	return scaling((1 - 2 * flip_x, 1 - 2 * flip_y))
 
 
-def change_transform_origin(transform, center):
+def change_transform_origin(transform, center) -> np.ndarray:
 	""" Create a new transform representing the same transformation,
 		only with the origin of the linear part changed.
 	Args
@@ -199,18 +200,18 @@ def change_transform_origin(transform, center):
 
 
 def random_transform(
-	min_rotation=0,
-	max_rotation=0,
-	min_translation=(0, 0),
-	max_translation=(0, 0),
-	min_shear=0,
-	max_shear=0,
-	min_scaling=(1, 1),
-	max_scaling=(1, 1),
-	flip_x_chance=0,
-	flip_y_chance=0,
-	prng=DEFAULT_PRNG
-):
+	min_rotation: float                  = 0,
+	max_rotation: float                  = 0,
+	min_translation: Tuple[float, float] = (0, 0),
+	max_translation: Tuple[float, float] = (0, 0),
+	min_shear: float                     = 0,
+	max_shear: float                     = 0,
+	min_scaling: Tuple[float]            = (1, 1),
+	max_scaling: Tuple[float]            = (1, 1),
+	flip_x_chance: float                 = 0,
+	flip_y_chance: float                 = 0,
+	prng                                 = DEFAULT_PRNG
+) -> np.ndarray:
 	""" Create a random transformation.
 	The transformation consists of the following operations in this order (from left to right):
 		* rotation
@@ -245,7 +246,7 @@ def random_transform(
 	])
 
 
-def random_transform_generator(prng=None, **kwargs):
+def random_transform_generator(prng=None, **kwargs) -> Generator[np.ndarray, None, None]:
 	""" Create a random transform generator.
 	Uses a dedicated, newly created, properly seeded PRNG by default instead of the global DEFAULT_PRNG.
 	The transformation consists of the following operations in this order (from left to right):

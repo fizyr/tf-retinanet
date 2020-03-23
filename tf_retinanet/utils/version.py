@@ -16,6 +16,7 @@ limitations under the License.
 
 from __future__ import print_function
 
+from typing import Tuple, List, Tuple
 import tensorflow as tf
 import sys
 
@@ -26,7 +27,7 @@ BLACKLISTED_TF_VERSIONS = [
 ]
 
 
-def tf_version():
+def tf_version() -> Tuple[int]:
 	""" Get the Tensorflow version.
 		Returns
 			tuple of (major, minor, patch).
@@ -34,13 +35,13 @@ def tf_version():
 	return tuple(map(int, tf.version.VERSION.split('-')[0].split('.')))
 
 
-def tf_version_ok(minimum_tf_version=MINIMUM_TF_VERSION, blacklisted=BLACKLISTED_TF_VERSIONS):
+def tf_version_ok(minimum_tf_version: Tuple[int] = MINIMUM_TF_VERSION, blacklisted: List[Tuple[int]] = BLACKLISTED_TF_VERSIONS) -> bool:
 	""" Check if the current Tensorflow version is higher than the minimum version.
 	"""
 	return tf_version() >= minimum_tf_version and tf_version() not in blacklisted
 
 
-def assert_tf_version(minimum_tf_version=MINIMUM_TF_VERSION, blacklisted=BLACKLISTED_TF_VERSIONS):
+def assert_tf_version(minimum_tf_version: Tuple[int] = MINIMUM_TF_VERSION, blacklisted: List[Tuple[int]] = BLACKLISTED_TF_VERSIONS):
 	""" Assert that the Tensorflow version is up to date.
 	"""
 	detected = tf.version.VERSION
