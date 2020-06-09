@@ -1,7 +1,7 @@
 backbone:
   name: resnet
   details:
-    type: resnet50
+    type: resnet50v2
     weights: imagenet
     freeze: false
 

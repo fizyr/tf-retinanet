@@ -4,6 +4,7 @@ This is a list of people who contributed patches to tf-retinanet.
 
 * Valerio Carpani <v.carpani@fizyr.com>
 * Hans Gaiser <h.gaiser@fizyr.com>
+* Jokke Ruokolainen <jokke.ruokolainen@vaisto.io>
 
 If you feel you should be listed here or if you have any other questions/comments on your listing here,
 please create an issue or pull request at https://github.com/fizyr/tf-retinanet/
