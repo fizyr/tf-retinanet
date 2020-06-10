@@ -290,6 +290,10 @@ def make_debug_config(args):
         config["generator"]["details"]["image_min_side"] = args.image_min_side
     if args.image_max_side:
         config["generator"]["details"]["image_max_side"] = args.image_max_side
+    if args.train_annotations:
+        config["generator"]["details"]["train_annotations_path"] = args.train_annotations
+    if args.train_classes:
+        config["generator"]["details"]["train_classes_path"] = args.train_classes
 
     # Debug config.
     if args.resize:
