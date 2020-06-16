@@ -29,12 +29,14 @@ if __name__ == "__main__" and __package__ is None:
 	import tf_retinanet.bin  # noqa: F401
 	__package__ = "tf_retinanet.bin"
 
+
 from ..              import models
 from ..backbones     import get_backbone
 from ..generators    import get_generators
 from ..utils.anchors import parse_anchor_parameters
 from ..utils.gpu     import setup_gpu
 from ..utils.config  import make_evaluation_config
+from ..utils.eval    import evaluate
 
 
 def parse_args(args):
@@ -53,9 +55,9 @@ def parse_args(args):
 	# Evaluate config.
 	parser.add_argument('--convert-model',   help='Convert the model to an inference model (ie. the input is a training model).', action='store_true')
 	parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi), -1 to run on cpu.', type=int)
-	parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',    default=0.05, type=float)
-	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',  default=0.5,  type=float)
-	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                         default=100,  type=int)
+	parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).',    type=float)
+	parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).',  type=float)
+	parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).',                         type=int)
 	parser.add_argument('--save-path',       help='Path for saving images with detections (doesn\'t work for COCO).',    default=None, type=str)
 
 	# Additional config.
@@ -96,8 +98,10 @@ def main(args=None):
 
 	# Get evaluation procedure.
 	if 'evaluation_procedure' not in generators:
-		raise ValueError('Evaluation not implement yet.')
-	evaluate = generators['evaluation_procedure']
+		print('Generator-specific evaluation not implemented, standard evaluate function will be used.')
+		evaluation = evaluate
+	else:
+		evaluation = generators['evaluation_procedure']
 
 	# Load model.
 	if config['evaluate']['weights'] is None:
@@ -114,14 +118,14 @@ def main(args=None):
 		model = models.retinanet.convert_model(model, anchor_params=anchor_params)
 
 	if config['generator']['name'] == 'coco':
-		evaluation = evaluate(test_generator, model)
+		evaluation(test_generator, model)
 	else:
-		evaluate(
+		evaluation(
 			test_generator,
 			model,
-			iou_threshold=args.iou_threshold,
-			score_threshold=args.score_threshold,
-			max_detections=args.max_detections,
+			iou_threshold=config["evaluate"]["iou_threshold"],
+			score_threshold=config["evaluate"]["score_threshold"],
+			max_detections=config["evaluate"]["max_detections"],
 			save_path=args.save_path
 		)
 

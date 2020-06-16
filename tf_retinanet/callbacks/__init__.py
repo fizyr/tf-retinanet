@@ -17,6 +17,7 @@ limitations under the License.
 from .common import *  # noqa: F401,F403
 
 import os
+import numpy as np
 
 
 def get_callbacks(
@@ -41,13 +42,18 @@ def get_callbacks(
 		earlystopping		: EarlyStopping criterion callback.
 		tensorboard			: Monitor training with TensorBoard.
 		reduceLR			: Reduce Learning Rate on plateau callback.
+    
 	Returns
 		The indicated callbacks.
 	"""
     callbacks = []
 
     # Save snapshots of the model.
-    os.makedirs(os.path.join(config["snapshots_path"], config["project_name"]))
+    try:
+        os.makedirs(os.path.join(config["snapshots_path"], config["project_name"]))
+    except FileExistsError as e:
+        print(e)
+        print("Folder already created, moving on.")
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         os.path.join(
             config["snapshots_path"], config["project_name"], "{epoch:02d}.h5"
@@ -66,24 +72,35 @@ def get_callbacks(
         callbacks.append(evaluation_callback)
 
     # Create TensorBoard Callback.
-    if config['tensorboard']:
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(
-            config["tensorboard_path"]
-        )
-        callbacks.append(tensorboard_callback)
+    try:
+        if config['tensorboard']:
+            tensorboard_callback = tf.keras.callbacks.TensorBoard(
+                config["tensorboard_path"]
+            )
+            callbacks.append(tensorboard_callback)
+    except KeyError as e:
+        pass
 
     # Create Reduce Learning Rate on Plateau Callback.
-    if config['reduceLR']:
-        reducer_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss',
-            patience=config["reduceLR_patience"]
-        )
-        callbacks.append(reducer_callback)
+    try:
+        if config['reduceLR']:
+            reducer_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss',
+                factor=np.sqrt(0.1),
+                min_lr=0.5e-6,
+                patience=config["reduceLR_patience"]
+            )
+            callbacks.append(reducer_callback)
+    except KeyError as e:
+        pass
 
     # Create earlystopping callback.
-    if config['earlystopping']:
-        earlystopping_callback = tf.keras.callbacks.EarlyStopping(
-            monitor="loss", patience=config["earlystopping_patience"]
-        )
-        callbacks.append(earlystopping_callback)
-
+    try:
+        if config['earlystopping']:
+            earlystopping_callback = tf.keras.callbacks.EarlyStopping(
+                monitor="loss", patience=config["earlystopping_patience"],  min_delta=1e-4
+            )
+            callbacks.append(earlystopping_callback)
+    except KeyError as e:
+        pass
+    
     return callbacks

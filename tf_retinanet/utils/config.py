@@ -156,6 +156,10 @@ def make_training_config(args):
         config["generator"]["details"]["image_min_side"] = args.image_min_side
     if args.image_max_side:
         config["generator"]["details"]["image_max_side"] = args.image_max_side
+    if args.train_annotations:
+        config["generator"]["details"]["train_annotations_path"] = args.train_annotations
+    if args.train_classes:
+        config["generator"]["details"]["train_classes_path"] = args.train_classes
 
     # Train config.
     if args.gpu:
@@ -174,6 +178,8 @@ def make_training_config(args):
         config["train"]["max_queue_size"] = args.max_queue_size
     if args.weights:
         config["train"]["weights"] = args.weights
+    if args.optimizer:
+        config["train"]["optimizer"] = args.optimizer
 
     # Callbacks config.
     if args.tensorboard:
@@ -185,6 +191,12 @@ def make_training_config(args):
     if args.reduceLR:
         config["callbacks"]["reduceLR"] = args.reduceLR
         config["callbacks"]["reduceLR_patience"] = args.reduceLR_patience
+    if args.lr_scheduler:
+        config["callbacks"]["lr_scheduler"] = args.lr_scheduler
+    if args.decay_steps:
+        config["callbacks"]["decay_steps"] = args.decay_steps
+    if args.decay_rate:
+        config["callbacks"]["decay_rate"] = args.decay_rate
 
     return config
 
@@ -290,10 +302,6 @@ def make_debug_config(args):
         config["generator"]["details"]["image_min_side"] = args.image_min_side
     if args.image_max_side:
         config["generator"]["details"]["image_max_side"] = args.image_max_side
-    if args.train_annotations:
-        config["generator"]["details"]["train_annotations_path"] = args.train_annotations
-    if args.train_classes:
-        config["generator"]["details"]["train_classes_path"] = args.train_classes
 
     # Debug config.
     if args.resize:
