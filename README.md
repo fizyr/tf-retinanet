@@ -18,8 +18,12 @@ The repository is still work in progress. Same results as ``keras-retinanet`` ar
 The ``tf-retinanet`` project has been designed to be modular. The following components are part of the project:
 * **Backbones**:
    * [ResNet](https://github.com/fizyr/tf-retinanet-backbones-resnet)
+   * [ResNet50v2](https://github.com/jakedismo/tf-retinanet-backbones-resnet50v2)
+   * [ResNet101v2](https://github.com/jakedismo/tf-retinanet-backbones-resnet101v2)
+   * [ResNet152v2](https://github.com/jakedismo/tf-retinanet-backbones-resnet152v2)
 * **Generators**:
    * [COCO](https://github.com/fizyr/tf-retinanet-generators-coco)
+   * [CSV](https://github.com/jakedismo/tf-retinanet-generators-csv)
 
 ## Installation
 
@@ -70,6 +74,8 @@ you will need to switch it to use absolute imports.
 If you installed `tf-retinanet` correctly, the train script will be installed as `retinanet-train`.
 However, if you make local modifications to the `tf-retinanet` repository, you should run the script directly from the repository.
 That will ensure that your local changes will be used by the train script.
+
+f.ex. with resnet50v2 backbone and csv generator `python3 ./tf-retinanet/tf_retinanet/bin/train.py --freeze-backbone --backbone resnet50v2 --random-transform --batch-size 2 --steps 10 --epochs 10 --generator csv csv "/PATH_TO_DATA/annotations.csv", "/PATH_TO_DATA/classes.csv"`
 
 ### Usage
 
